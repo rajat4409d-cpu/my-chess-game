@@ -18,7 +18,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #1e1e1e; /* VS Code dark mode vibe */
+            background-color: #1e1e1e;
             color: white;
             padding: 40px;
         }
@@ -61,7 +61,6 @@
         var board = null;
         var game = new Chess();
 
-        // Prevent picking up pieces if the game is over or it's not that player's turn
         function onDragStart (source, piece, position, orientation) {
             if (game.game_over()) return false;
             if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
@@ -70,38 +69,33 @@
             }
         }
 
-        // Handle the logic when a piece is dropped on a square
         function onDrop (source, target) {
-            // Ask chess.js if the move is legal
             var move = game.move({
                 from: source,
                 to: target,
-                promotion: 'q' // Automatically promote pawns to Queens for simplicity
+                promotion: 'q'
             });
 
-            // If the move is illegal, snap the piece back to where it started
             if (move === null) return 'snapback';
         }
 
-        // Update the board UI after the piece is dropped 
-        // (crucial for castling, en passant, and pawn promotions)
         function onSnapEnd () {
             board.position(game.fen());
         }
 
-        // Configure the board settings
+        // --- THIS IS THE PART THAT CHANGED ---
         var config = {
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
             draggable: true,
             position: 'start',
             onDragStart: onDragStart,
             onDrop: onDrop,
             onSnapEnd: onSnapEnd
         };
+        // -------------------------------------
 
-        // Initialize the board!
         board = Chessboard('myBoard', config);
 
-        // Make the Restart button work
         $('#resetBtn').on('click', function () {
             game.reset();
             board.start();
