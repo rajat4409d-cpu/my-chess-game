@@ -6,12 +6,9 @@
     <title>My Custom Chess Game</title>
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -24,9 +21,7 @@
             color: white;
             padding: 40px;
         }
-        h1 {
-            margin-bottom: 0px;
-        }
+        h1 { margin-bottom: 0px; }
         #gameStatus {
             font-size: 20px;
             font-weight: bold;
@@ -35,9 +30,15 @@
             margin-bottom: 5px;
             height: 25px;
         }
+        
+        /* NEW: Container to help position our custom menu over the board */
+        #boardContainer {
+            position: relative;
+            margin-top: 10px;
+        }
+        
         #myBoard {
             width: 450px;
-            margin-top: 10px;
             border: 4px solid #333;
             border-radius: 4px;
         }
@@ -53,14 +54,9 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        button:hover {
-            background-color: #005f9e;
-        }
-
-        /* NEW: CSS for the green dots on possible moves */
-        .possible-move {
-            position: relative;
-        }
+        button:hover { background-color: #005f9e; }
+        
+        .possible-move { position: relative; }
         .possible-move::after {
             content: '';
             position: absolute;
@@ -68,21 +64,76 @@
             left: 50%;
             width: 22px;
             height: 22px;
-            background-color: rgba(20, 85, 30, 0.6); /* Dark green with transparency */
+            background-color: rgba(20, 85, 30, 0.6);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            /* This ensures the dot doesn't block you from dropping the piece on the square */
             pointer-events: none; 
         }
+
+        /* NEW: CSS for the beautiful Promotion Menu */
+        #promotionMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #252526;
+            border: 2px solid #007acc;
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 100;
+            box-shadow: 0px 8px 25px rgba(0,0,0,0.8);
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+        }
+        #promotionMenu p {
+            margin: 0 0 15px 0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .promo-pieces {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .promo-piece {
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .promo-piece:hover {
+            transform: scale(1.1);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        #cancelPromoBtn {
+            margin-top: 0;
+            padding: 8px 16px;
+            background-color: #d9534f; /* Red cancel button */
+        }
+        #cancelPromoBtn:hover { background-color: #c9302c; }
     </style>
 </head>
 <body>
 
     <h1>My Chess Game</h1>
-    
     <div id="gameStatus">White to move</div>
     
-    <div id="myBoard"></div>
+    <div id="boardContainer">
+        <div id="myBoard"></div>
+        
+        <div id="promotionMenu">
+            <p>Promote Pawn to:</p>
+            <div class="promo-pieces">
+                <img src="" data-piece="q" class="promo-piece" alt="Queen">
+                <img src="" data-piece="r" class="promo-piece" alt="Rook">
+                <img src="" data-piece="b" class="promo-piece" alt="Bishop">
+                <img src="" data-piece="n" class="promo-piece" alt="Knight">
+            </div>
+            <button id="cancelPromoBtn">Cancel Move</button>
+        </div>
+    </div>
     
     <button id="resetBtn">Restart Game</button>
 
@@ -90,89 +141,112 @@
         var board = null;
         var game = new Chess();
         var $status = $('#gameStatus');
+        
+        // NEW: Variable to hold the move details while waiting for the player to click a piece
+        var pendingPromotionMove = null;
 
-        // NEW: Function to clear the green dots
         function removeHighlights() {
             $('#myBoard .square-55d63').removeClass('possible-move');
         }
 
-        // NEW: Function to update the text and trigger confetti
         function updateStatus() {
             var statusHTML = '';
             var moveColor = (game.turn() === 'w') ? 'White' : 'Black';
 
             if (game.in_checkmate()) {
-                // If checkmate, state the winner and fire the confetti!
                 var winner = (game.turn() === 'w') ? 'Black' : 'White';
                 statusHTML = 'Checkmate! ' + winner + ' wins! 🎉';
-                
-                // Fire the confetti
-                confetti({
-                    particleCount: 150,
-                    spread: 80,
-                    origin: { y: 0.6 } // Start slightly below the top of the screen
-                });
-
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             } else if (game.in_draw()) {
                 statusHTML = 'Game Over. It\'s a Draw!';
             } else {
-                // Normal turn
                 statusHTML = moveColor + ' to move';
-                
-                // Add "(In Check)" if applicable
                 if (game.in_check()) {
                     statusHTML += ' (In Check!)';
                 }
             }
-
             $status.text(statusHTML);
         }
 
-        // UPDATED: Allow both players to drag, and show the green dots
         function onDragStart (source, piece, position, orientation) {
-            // Do not pick up pieces if the game is over
             if (game.game_over()) return false;
-
-            // Only pick up pieces for the side whose turn it is
             if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
                 (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
                 return false;
             }
 
-            // Get a list of all legal moves for the piece we just picked up
-            var moves = game.moves({
-                square: source,
-                verbose: true
-            });
-
-            // If there are no legal moves, don't let them pick it up
+            var moves = game.moves({ square: source, verbose: true });
             if (moves.length === 0) return false;
 
-            // Add the 'possible-move' CSS class to every target square
             for (var i = 0; i < moves.length; i++) {
                 $('#myBoard .square-' + moves[i].to).addClass('possible-move');
             }
         }
 
         function onDrop (source, target) {
-            // Immediately remove the green dots when the piece is dropped
             removeHighlights();
 
-            var move = game.move({
-                from: source,
-                to: target,
-                promotion: 'q'
-            });
+            var pieceToMove = game.get(source);
+            var isPromotion = (pieceToMove !== null && pieceToMove.type === 'p' && 
+                              (target.charAt(1) === '8' || target.charAt(1) === '1'));
 
+            if (isPromotion) {
+                // 1. Save the move details for later
+                pendingPromotionMove = { source: source, target: target };
+                
+                // 2. Load the correct colored pieces into the menu
+                var colorStr = pieceToMove.color; // 'w' or 'b'
+                $('.promo-piece').each(function() {
+                    var pieceLetter = $(this).data('piece');
+                    var imageUrl = 'https://chessboardjs.com/img/chesspieces/wikipedia/' + colorStr + pieceLetter.toUpperCase() + '.png';
+                    $(this).attr('src', imageUrl);
+                });
+
+                // 3. Show the visual menu
+                $('#promotionMenu').css('display', 'flex');
+                
+                // 4. Snap the pawn back temporarily until they make a choice
+                return 'snapback'; 
+            }
+
+            // Normal move logic
+            var move = game.move({ from: source, to: target, promotion: 'q' });
             if (move === null) return 'snapback';
-
-            // Update the status text and check for a win
             updateStatus();
         }
 
         function onSnapEnd () {
-            board.position(game.fen());
+            // Only update the board if we aren't currently waiting in the promotion menu
+            if (pendingPromotionMove === null) {
+                board.position(game.fen());
+            }
         }
+
+        // --- NEW: Handle clicks on the visual menu ---
+        $('.promo-piece').on('click', function() {
+            var chosenPiece = $(this).data('piece');
+            $('#promotionMenu').css('display', 'none'); // Hide the menu
+
+            if (pendingPromotionMove) {
+                // Execute the actual move now that we have the piece choice
+                game.move({
+                    from: pendingPromotionMove.source,
+                    to: pendingPromotionMove.target,
+                    promotion: chosenPiece
+                });
+
+                pendingPromotionMove = null;
+                board.position(game.fen()); // Update the visual board
+                updateStatus(); // Check for checkmate/confetti
+            }
+        });
+
+        // NEW: Handle clicking Cancel on the visual menu
+        $('#cancelPromoBtn').on('click', function() {
+            $('#promotionMenu').css('display', 'none'); // Hide the menu
+            pendingPromotionMove = null;
+            // We don't need to do anything else because we already snapped the pawn back
+        });
 
         var config = {
             pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
@@ -184,14 +258,14 @@
         };
 
         board = Chessboard('myBoard', config);
-
-        // Make sure the text is correct when the page first loads
         updateStatus();
 
         $('#resetBtn').on('click', function () {
             game.reset();
             board.start();
             updateStatus();
+            $('#promotionMenu').css('display', 'none'); // Hide menu if visible
+            pendingPromotionMove = null;
         });
     </script>
 </body>
