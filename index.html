@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Custom Chess Game</title>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #1e1e1e; /* VS Code dark mode vibe */
+            color: white;
+            padding: 40px;
+        }
+        h1 {
+            margin-bottom: 5px;
+        }
+        #myBoard {
+            width: 450px;
+            margin-top: 20px;
+            border: 4px solid #333;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 25px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007acc;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #005f9e;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>My Chess Game</h1>
+    <p>Play against a friend!</p>
+    
+    <div id="myBoard"></div>
+    
+    <button id="resetBtn">Restart Game</button>
+
+    <script>
+        var board = null;
+        var game = new Chess();
+
+        // Prevent picking up pieces if the game is over or it's not that player's turn
+        function onDragStart (source, piece, position, orientation) {
+            if (game.game_over()) return false;
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+        }
+
+        // Handle the logic when a piece is dropped on a square
+        function onDrop (source, target) {
+            // Ask chess.js if the move is legal
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // Automatically promote pawns to Queens for simplicity
+            });
+
+            // If the move is illegal, snap the piece back to where it started
+            if (move === null) return 'snapback';
+        }
+
+        // Update the board UI after the piece is dropped 
+        // (crucial for castling, en passant, and pawn promotions)
+        function onSnapEnd () {
+            board.position(game.fen());
+        }
+
+        // Configure the board settings
+        var config = {
+            draggable: true,
+            position: 'start',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd
+        };
+
+        // Initialize the board!
+        board = Chessboard('myBoard', config);
+
+        // Make the Restart button work
+        $('#resetBtn').on('click', function () {
+            game.reset();
+            board.start();
+        });
+    </script>
+</body>
+</html>
