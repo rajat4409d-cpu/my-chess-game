@@ -1,12 +1,26 @@
-/* Base Theme */
+/* --- PREMIUM MODERN FONT --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+/* --- ANIMATED DEEP BACKGROUND --- */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #0d0d0d;
-    color: #ffffff;
+    font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 40px 20px;
     display: flex;
     justify-content: center;
+    color: #ffffff;
+    min-height: 100vh;
+    
+    /* Sleek, slow-moving dark gradient */
+    background: linear-gradient(-45deg, #0f172a, #1e1b4b, #0f172a, #020617);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .dashboard {
@@ -17,36 +31,55 @@ body {
     width: 100%;
 }
 
-/* Left Column */
+/* --- GLASSMORPHISM PANELS --- */
+/* This is the secret sauce. It makes the divs look like frosted glass */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
 .game-column {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: #1a1a1a;
     padding: 30px;
-    border-radius: 12px;
-    border: 1px solid #333;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+/* Re-use the glass effect by extending the class visually */
+.game-column, .panel, .settings-content, #promotionMenu {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
+/* --- GAME UI ELEMENTS --- */
 #gameStatus {
     font-size: 24px;
-    font-weight: bold;
-    color: #007acc;
+    font-weight: 800;
+    background: linear-gradient(135deg, #60a5fa, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin-bottom: 20px;
     height: 30px;
+    letter-spacing: 0.5px;
 }
 
 #boardContainer { position: relative; }
 
 #myBoard {
     width: 500px;
-    border: 4px solid #2d2d2d;
-    border-radius: 4px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    border-radius: 8px;
+    overflow: hidden; /* Keeps the corners sharp */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
 }
 
-/* Right Column */
+/* --- SIDEBAR --- */
 .sidebar {
     display: flex;
     flex-direction: column;
@@ -55,11 +88,11 @@ body {
 }
 
 .panel {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+.panel:hover {
+    transform: translateY(-2px);
 }
 
 .player-card {
@@ -72,140 +105,174 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .avatar {
     width: 40px;
     height: 40px;
-    background: #333;
-    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20px;
 }
 
-/* Active Timer Styling */
+/* --- SLEEK TIMERS --- */
 .timer {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'Inter', monospace;
     font-size: 20px;
-    font-weight: bold;
-    background: #000;
-    color: #ccc;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid #333;
-    transition: all 0.3s;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.4);
+    color: #64748b;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.3s ease;
 }
 .timer.active {
-    color: #007acc;
-    border-color: #007acc;
-    box-shadow: 0 0 10px rgba(0, 122, 204, 0.3);
+    color: #ffffff;
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
 }
-.timer.danger { color: #d9534f; border-color: #d9534f; }
+.timer.danger { 
+    color: #ef4444; 
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.5); 
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
 
-/* Move History */
+/* --- MOVE HISTORY --- */
 .history-panel { flex-grow: 1; display: flex; flex-direction: column; height: 300px; }
-.history-panel h3 { margin: 0 0 15px 0; color: #aaa; font-size: 14px; text-transform: uppercase; }
+.history-panel h3 { margin: 0 0 15px 0; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
 .history-list {
-    flex-grow: 1; overflow-y: auto; background: #111;
-    border-radius: 6px; padding: 10px; border: 1px solid #222;
+    flex-grow: 1; overflow-y: auto; 
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px; padding: 10px; 
+    border: 1px solid rgba(255,255,255,0.05);
 }
 .history-row {
-    display: flex; padding: 8px 10px; border-bottom: 1px solid #222;
-    font-family: 'Courier New', Courier, monospace; color: #ccc;
+    display: flex; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-family: 'Inter', monospace; color: #cbd5e1; font-size: 14px;
 }
 .history-row:last-child { border-bottom: none; }
-.history-row .move-num { width: 40px; color: #666; }
+.history-row .move-num { width: 40px; color: #64748b; }
 .history-row .move-w, .history-row .move-b { flex: 1; }
 
-/* Buttons */
-.button-group { display: flex; gap: 10px; margin-top: 20px; width: 100%; }
-button {
-    flex: 1; padding: 14px 20px; font-size: 16px; font-weight: bold;
-    color: white; background-color: #007acc; border: none; border-radius: 8px; cursor: pointer;
-    .btn-danger { background-color: #d9534f; }
-        .btn-danger:hover { background-color: #c9302c; }
-        .action-buttons button { font-size: 14px; padding: 10px; }
-}
-button:hover { background-color: #005f9e; }
-.btn-secondary { background-color: #333; }
-.btn-secondary:hover { background-color: #444; }
+/* Custom Scrollbar for History */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-/* Settings Modal */
+/* --- MODERN BUTTONS --- */
+.button-group { display: flex; gap: 10px; margin-top: 20px; width: 100%; }
+.action-buttons { margin-top: 15px; }
+
+button {
+    flex: 1; 
+    padding: 12px 20px; 
+    font-family: 'Inter', sans-serif;
+    font-size: 15px; 
+    font-weight: 600;
+    color: white; 
+    /* Primary buttons get a sleek gradient */
+    background: linear-gradient(135deg, #3b82f6, #6366f1); 
+    border: none; 
+    border-radius: 10px; 
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+button:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+button:active { transform: translateY(0px); }
+
+/* Secondary & Danger Buttons */
+.btn-secondary { 
+    background: rgba(255,255,255,0.05); 
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: none;
+}
+.btn-secondary:hover { 
+    background: rgba(255,255,255,0.1); 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.btn-danger { background: rgba(239, 68, 68, 0.8); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+.btn-danger:hover { background: rgba(239, 68, 68, 1); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
+.action-buttons button { font-size: 13px; padding: 10px; }
+
+/* --- SETTINGS MODAL --- */
 #settingsModal {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.8); z-index: 200; display: none; 
-    justify-content: center; align-items: center;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+    z-index: 200; display: none; justify-content: center; align-items: center;
 }
-.settings-content {
-    background: #1a1a1a; padding: 30px; border-radius: 12px;
-    border: 1px solid #333; width: 300px; box-shadow: 0 10px 40px rgba(0,0,0,1);
-}
-.settings-content h2 { margin-top: 0; color: #007acc; }
+.settings-content { width: 320px; padding: 35px; }
+.settings-content h2 { margin-top: 0; background: linear-gradient(135deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .settings-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
-select { padding: 10px; background: #333; color: white; border: none; border-radius: 4px; font-size: 16px; }
+.settings-group label { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;}
+select { 
+    padding: 12px; 
+    background: rgba(0,0,0,0.3); 
+    color: white; 
+    border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 8px; 
+    font-family: 'Inter', sans-serif;
+    font-size: 15px; 
+    outline: none;
+    cursor: pointer;
+}
+select:focus { border-color: #3b82f6; }
+select option { background: #1e293b; }
 
-/* Overlays & Dots */
+/* --- GRAVEYARD (CAPTURED PIECES) --- */
+.player-details { display: flex; flex-direction: column; gap: 6px; }
+.captured-area { display: flex; align-items: center; min-height: 30px; }
+.captured-area img { 
+    width: 28px; height: 28px; margin-right: -8px; 
+    filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.6)) drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.2)); 
+    transition: transform 0.2s ease;
+}
+.captured-area img:hover { transform: translateY(-3px); z-index: 10; }
+.advantage { 
+    font-size: 14px; font-weight: 800; 
+    color: #4ade80; margin-left: 14px; 
+    background: rgba(74, 222, 128, 0.1);
+    padding: 2px 6px; border-radius: 4px;
+}
+
+/* --- OVERLAYS & PROMOTION --- */
 .possible-move { position: relative; }
 .possible-move::after {
     content: ''; position: absolute; top: 50%; left: 50%; width: 24px; height: 24px;
-    background-color: rgba(0, 122, 204, 0.6); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; 
+    background-color: rgba(0, 0, 0, 0.3); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; 
 }
 #promotionMenu {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #1a1a1a; border: 2px solid #007acc; border-radius: 12px;
-    padding: 20px; z-index: 100; box-shadow: 0px 10px 40px rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center;
+    padding: 25px; z-index: 100; display: none; flex-direction: column; align-items: center;
 }
-#promotionMenu p { margin: 0 0 15px 0; font-weight: bold; font-size: 18px; }
+#promotionMenu p { margin: 0 0 15px 0; font-weight: 800; font-size: 16px; color: #fff;}
 .promo-pieces { display: flex; gap: 15px; margin-bottom: 15px; }
-.promo-piece { width: 60px; height: 60px; cursor: pointer; transition: transform 0.1s; }
-.promo-piece:hover { transform: scale(1.1); background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; }
-#cancelPromoBtn { background-color: #d9534f; margin-top: 0; }
-#cancelPromoBtn:hover { background-color: #c9302c; }
-/* Captured Pieces Graveyard */
-.player-details { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 6px; 
-}
-.captured-area { 
-    display: flex; 
-    align-items: center; 
-    min-height: 30px; 
-}
-.captured-area img { 
-    width: 28px; /* Made the pieces slightly larger */
-    height: 28px; 
-    margin-right: -6px; /* Reduced the squish */
-    
-    /* Changed to a subtle white 'rim light' so black pieces pop against the dark background */
-    filter: drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.25)); 
-}
-.advantage { 
-    font-size: 15px; 
-    font-weight: bold; 
-    color: #4CAF50; 
-    margin-left: 12px; 
-    font-family: 'Courier New', Courier, monospace;
-}
-/* --- BOARD THEMES --- */
-/* Theme: Lichess Blue */
+.promo-piece { width: 60px; height: 60px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.promo-piece:hover { transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+
+/* --- LAST MOVE HIGHLIGHT --- */
+.highlight-move { box-shadow: inset 0 0 0 50px rgba(255, 255, 51, 0.3) !important; }
+
+/* --- CUSTOM BOARD THEMES --- */
 .theme-blue .white-1e1d7 { background-color: #dee3e6 !important; }
 .theme-blue .black-3c85d { background-color: #8ca2ad !important; }
 
-/* Theme: Mint Green */
 .theme-green .white-1e1d7 { background-color: #ffffdd !important; }
 .theme-green .black-3c85d { background-color: #86a666 !important; }
 
-/* Theme: Sleek Monochrome */
 .theme-monochrome .white-1e1d7 { background-color: #e8e8e8 !important; }
 .theme-monochrome .black-3c85d { background-color: #888888 !important; }
-
-/* --- LAST MOVE HIGHLIGHT --- */
-.highlight-move {
-    /* Uses an inset shadow to tint the square yellow without covering the piece */
-    box-shadow: inset 0 0 0 50px rgba(255, 255, 51, 0.4) !important;
-}
