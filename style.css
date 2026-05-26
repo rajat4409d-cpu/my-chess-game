@@ -126,6 +126,9 @@ body {
 button {
     flex: 1; padding: 14px 20px; font-size: 16px; font-weight: bold;
     color: white; background-color: #007acc; border: none; border-radius: 8px; cursor: pointer;
+    .btn-danger { background-color: #d9534f; }
+        .btn-danger:hover { background-color: #c9302c; }
+        .action-buttons button { font-size: 14px; padding: 10px; }
 }
 button:hover { background-color: #005f9e; }
 .btn-secondary { background-color: #333; }
@@ -162,3 +165,47 @@ select { padding: 10px; background: #333; color: white; border: none; border-rad
 .promo-piece:hover { transform: scale(1.1); background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; }
 #cancelPromoBtn { background-color: #d9534f; margin-top: 0; }
 #cancelPromoBtn:hover { background-color: #c9302c; }
+/* Captured Pieces Graveyard */
+.player-details { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+}
+.captured-area { 
+    display: flex; 
+    align-items: center; 
+    min-height: 30px; 
+}
+.captured-area img { 
+    width: 28px; /* Made the pieces slightly larger */
+    height: 28px; 
+    margin-right: -6px; /* Reduced the squish */
+    
+    /* Changed to a subtle white 'rim light' so black pieces pop against the dark background */
+    filter: drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.25)); 
+}
+.advantage { 
+    font-size: 15px; 
+    font-weight: bold; 
+    color: #4CAF50; 
+    margin-left: 12px; 
+    font-family: 'Courier New', Courier, monospace;
+}
+/* --- BOARD THEMES --- */
+/* Theme: Lichess Blue */
+.theme-blue .white-1e1d7 { background-color: #dee3e6 !important; }
+.theme-blue .black-3c85d { background-color: #8ca2ad !important; }
+
+/* Theme: Mint Green */
+.theme-green .white-1e1d7 { background-color: #ffffdd !important; }
+.theme-green .black-3c85d { background-color: #86a666 !important; }
+
+/* Theme: Sleek Monochrome */
+.theme-monochrome .white-1e1d7 { background-color: #e8e8e8 !important; }
+.theme-monochrome .black-3c85d { background-color: #888888 !important; }
+
+/* --- LAST MOVE HIGHLIGHT --- */
+.highlight-move {
+    /* Uses an inset shadow to tint the square yellow without covering the piece */
+    box-shadow: inset 0 0 0 50px rgba(255, 255, 51, 0.4) !important;
+}

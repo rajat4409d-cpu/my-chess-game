@@ -35,6 +35,12 @@
                 </div>
             </div>
 
+            <div class="button-group action-buttons">
+                <button id="undoBtn" class="btn-secondary" title="Undo Move">⟲ Undo</button>
+                <button id="drawBtn" class="btn-secondary" title="Offer Draw">½ Draw</button>
+                <button id="resignBtn" class="btn-danger" title="Resign">🏳️ Resign</button>
+            </div>
+
             <div class="button-group">
                 <button id="resetBtn">Restart Game</button>
                 <button id="settingsBtn" class="btn-secondary">Settings</button>
@@ -43,7 +49,10 @@
 
         <div class="sidebar">
             <div class="panel player-card">
-                <div class="player-info"><div class="avatar">♟️</div><span>Player 2 (Black)</span></div>
+                <div class="player-details">
+                    <div class="player-info"><div class="avatar">🤖</div><span>Stockfish AI (Black)</span></div>
+                    <div class="captured-area" id="capturedByBlack"></div>
+                </div>
                 <div id="timerBlack" class="timer">10:00</div>
             </div>
 
@@ -54,7 +63,10 @@
             </div>
 
             <div class="panel player-card">
-                <div class="player-info"><div class="avatar">♙</div><span>Player 1 (White)</span></div>
+                <div class="player-details">
+                    <div class="player-info"><div class="avatar">♙</div><span>Player 1 (White)</span></div>
+                    <div class="captured-area" id="capturedByWhite"></div>
+                </div>
                 <div id="timerWhite" class="timer active">10:00</div>
             </div>
         </div>
@@ -71,6 +83,27 @@
                     <option value="180">3 Minutes (Blitz)</option>
                     <option value="300">5 Minutes (Blitz)</option>
                     <option value="600" selected>10 Minutes (Rapid)</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label>Computer Difficulty</label>
+                <select id="difficultySelect">
+                    <option value="1">Beginner (Depth 1)</option>
+                    <option value="5">Amateur (Depth 5)</option>
+                    <option value="10" selected>Advanced (Depth 10)</option>
+                    <option value="15">Master (Depth 15)</option>
+                    <option value="20">Grandmaster (Depth 20)</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label>Board Theme</label>
+                <select id="themeSelect">
+                    <option value="classic" selected>Classic Wood</option>
+                    <option value="blue">Lichess Blue</option>
+                    <option value="green">Mint Green</option>
+                    <option value="monochrome">Sleek Monochrome</option>
                 </select>
             </div>
 
