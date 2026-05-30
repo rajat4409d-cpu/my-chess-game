@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Chess Dashboard</title>
+    <title>Premium Chess Engine</title>
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
@@ -15,61 +15,81 @@
 </head>
 <body>
 
-    <div class="dashboard">
+    <div class="app-layout">
         
-        <div class="game-column">
+        <aside class="left-nav">
+            <div class="logo">♔ ChessEngine</div>
+            <ul class="nav-links">
+                <li><span class="icon">🏠</span> Home</li>
+                <li class="active"><span class="icon">♟️</span> Play</li>
+                <li><span class="icon">📊</span> Analyze</li>
+            </ul>
+        </aside>
+
+        <main class="board-area">
             <div id="gameStatus">White to move</div>
+            <div id="openingTracker">Standard Starting Position</div>
+
+            <div class="board-profile opponent-profile">
+                <div class="player-info"><div class="avatar">🤖</div><span>Stockfish AI (Level 20)</span></div>
+                <div id="timerBlack" class="timer">10:00</div>
+            </div>
             
             <div id="boardContainer">
+                <div id="evalBar">
+                    <div id="evalFill"></div>
+                </div>
+
                 <div id="myBoard"></div>
+
+                <div id="boardControls">
+                    <button id="flipBoardBtn" title="Flip Board">&#x1F503;</button>
+                </div>
                 
                 <div id="promotionMenu">
-                    <p>Promote Pawn to:</p>
+                    <p>Promote to:</p>
                     <div class="promo-pieces">
                         <img src="" data-piece="q" class="promo-piece" alt="Queen">
                         <img src="" data-piece="r" class="promo-piece" alt="Rook">
                         <img src="" data-piece="b" class="promo-piece" alt="Bishop">
                         <img src="" data-piece="n" class="promo-piece" alt="Knight">
                     </div>
-                    <button id="cancelPromoBtn">Cancel Move</button>
+                    <button id="cancelPromoBtn">Cancel</button>
                 </div>
             </div>
 
-            <div class="button-group action-buttons">
-                <button id="undoBtn" class="btn-secondary" title="Undo Move">⟲ Undo</button>
-                <button id="drawBtn" class="btn-secondary" title="Offer Draw">½ Draw</button>
-                <button id="resignBtn" class="btn-danger" title="Resign">🏳️ Resign</button>
-            </div>
-
-            <div class="button-group">
-                <button id="resetBtn">Restart Game</button>
-                <button id="settingsBtn" class="btn-secondary">Settings</button>
-            </div>
-        </div>
-
-        <div class="sidebar">
-            <div class="panel player-card">
-                <div class="player-details">
-                    <div class="player-info"><div class="avatar">🤖</div><span>Stockfish AI (Black)</span></div>
-                    <div class="captured-area" id="capturedByBlack"></div>
-                </div>
-                <div id="timerBlack" class="timer">10:00</div>
-            </div>
-
-            <div class="panel history-panel">
-                <h3>Move History</h3>
-                <div class="history-list" id="moveHistory">
-                    </div>
-            </div>
-
-            <div class="panel player-card">
-                <div class="player-details">
-                    <div class="player-info"><div class="avatar">♙</div><span>Player 1 (White)</span></div>
-                    <div class="captured-area" id="capturedByWhite"></div>
-                </div>
+            <div class="board-profile player-profile">
+                <div class="player-info"><div class="avatar">♙</div><span>You (White)</span></div>
                 <div id="timerWhite" class="timer active">10:00</div>
             </div>
-        </div>
+
+            <div class="action-buttons">
+                <button id="undoBtn" class="btn-outline" title="Undo Last Move">⟲ Undo</button>
+                <button id="drawBtn" class="btn-outline" title="Offer a Draw">½ Draw</button>
+                <button id="resignBtn" class="btn-outline btn-danger-outline" title="Resign Game">🏳️ Resign</button>
+                <button id="downloadPgnBtn" class="btn-outline" title="Download Match">📥 PGN</button>
+                <button id="resetBtn" class="btn-outline" title="Restart Game">Restart</button>
+                <button id="settingsBtn" class="btn-outline" title="Settings">⚙️</button>
+            </div>
+        </main>
+
+        <aside class="right-panel">
+            <div class="panel-header">Match Data</div>
+            
+            <div class="graveyard-container">
+                <p class="section-title">Captured by Black</p>
+                <div class="captured-area" id="capturedByBlack"></div>
+                
+                <p class="section-title">Captured by White</p>
+                <div class="captured-area" id="capturedByWhite"></div>
+            </div>
+
+            <div class="history-container">
+                <p class="section-title">Move History</p>
+                <div class="history-list" id="moveHistory"></div>
+            </div>
+        </aside>
+
     </div>
 
     <div id="settingsModal">
@@ -77,48 +97,41 @@
             <h2>Game Settings</h2>
             
             <div class="settings-group">
-                <label>Time Control</label>
-                <select id="timeSelect">
-                    <option value="60">1 Minute (Bullet)</option>
-                    <option value="180">3 Minutes (Blitz)</option>
-                    <option value="300">5 Minutes (Blitz)</option>
-                    <option value="600" selected>10 Minutes (Rapid)</option>
+                <label>Game Mode</label>
+                <select id="modeSelect">
+                    <option value="pve" selected>1 Player (vs Computer)</option>
+                    <option value="pvp">2 Player (Local Match)</option>
                 </select>
             </div>
 
-            <div class="settings-group">
-                <label>Computer Difficulty</label>
-                <select id="difficultySelect">
-                    <option value="1">Beginner (Depth 1)</option>
-                    <option value="5">Amateur (Depth 5)</option>
-                    <option value="10" selected>Advanced (Depth 10)</option>
-                    <option value="15">Master (Depth 15)</option>
-                    <option value="20">Grandmaster (Depth 20)</option>
-                </select>
-            </div>
+            <div class="settings-group"><label>Time Control</label><select id="timeSelect">
+                <option value="60">1 Min</option><option value="180">3 Min</option><option value="300">5 Min</option><option value="600" selected>10 Min</option>
+            </select></div>
+            <div class="settings-group"><label>Difficulty</label><select id="difficultySelect">
+                <option value="1">Beginner</option><option value="10" selected>Advanced</option><option value="20">Grandmaster</option>
+            </select></div>
+            
+            <div class="settings-group"><label>Piece Style</label><select id="pieceSelect">
+                <option value="wikipedia" selected>Classic (Wikipedia)</option>
+                <option value="alpha">Modern (Alpha)</option>
+                <option value="uscf">Wood (USCF)</option>
+            </select></div>
 
-            <div class="settings-group">
-                <label>Board Theme</label>
-                <select id="themeSelect">
-                    <option value="classic" selected>Classic Wood</option>
-                    <option value="blue">Lichess Blue</option>
-                    <option value="green">Mint Green</option>
-                    <option value="monochrome">Sleek Monochrome</option>
-                </select>
-            </div>
-
-            <div class="settings-group">
-                <label>Board Options</label>
-                <button id="flipBoardBtn" class="btn-secondary">Flip Board</button>
-            </div>
-
-            <div class="button-group">
-                <button id="closeSettingsBtn" class="btn-secondary">Cancel</button>
-                <button id="saveSettingsBtn">Save & Restart</button>
+            <div class="settings-group"><label>Board Theme</label><select id="themeSelect">
+                <option value="classic">Wood</option>
+                <option value="green" selected>Mint Green</option>
+                <option value="blue">Lichess Blue</option>
+                <option value="monochrome">Sleek Monochrome</option>
+                <option value="coral">Soft Coral</option>
+            </select></div>
+            
+            <div class="modal-buttons">
+                <button id="closeSettingsBtn" class="btn-outline">Cancel</button>
+                <button id="saveSettingsBtn" class="btn-primary">Save & Restart</button>
             </div>
         </div>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html>
