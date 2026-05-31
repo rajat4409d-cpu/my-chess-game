@@ -20,9 +20,9 @@
         <aside class="left-nav">
             <div class="logo">♔ ChessEngine</div>
             <ul class="nav-links">
-                <li><span class="icon">🏠</span> Home</li>
-                <li class="active"><span class="icon">♟️</span> Play</li>
-                <li><span class="icon">📊</span> Analyze</li>
+                <li id="homeNavBtn"><span class="icon">🏠</span> Home</li>
+                <li id="playNavBtn" class="active"><span class="icon">♟️</span> Play</li>
+                <li id="analyzeNavBtn"><span class="icon">📊</span> Analyze</li>
             </ul>
         </aside>
 
@@ -92,6 +92,160 @@
 
     </div>
 
+    <!-- HOME OVERLAY -->
+<div id="homeOverlay">
+        <div class="home-layout">
+            <aside class="home-left-nav">
+                <div class="logo">&#9820; ChessEngine</div>
+                <ul class="nav-links">
+                    <li class="active"><span class="icon">&#127968;</span> Home</li>
+                    <li id="homeToPlayBtn"><span class="icon">&#9823;&#65039;</span> Play</li>
+                    <li id="homeToAnalyzeBtn"><span class="icon">&#128202;</span> Analyze</li>
+                </ul>
+            </aside>
+            <main class="home-main">
+                <div class="home-profile-header">
+                    <div class="home-avatar">&#9818;</div>
+                    <div class="home-profile-info">
+                        <div class="home-username">Player</div>
+                        <div class="home-subtitle">Session Profile &middot; ChessEngine</div>
+                    </div>
+                    <button class="home-play-btn" id="homePlayNowBtn">&#9654; Play Now</button>
+                </div>
+                <div class="home-stat-cards">
+                    <div class="home-stat-card"><div class="stat-icon">&#127918;</div><div class="stat-value" id="statGamesPlayed">0</div><div class="stat-label">Games Played</div></div>
+                    <div class="home-stat-card win"><div class="stat-icon">&#127942;</div><div class="stat-value" id="statWins">0</div><div class="stat-label">Wins</div></div>
+                    <div class="home-stat-card loss"><div class="stat-icon">&#128128;</div><div class="stat-value" id="statLosses">0</div><div class="stat-label">Losses</div></div>
+                    <div class="home-stat-card draw"><div class="stat-icon">&#129309;</div><div class="stat-value" id="statDraws">0</div><div class="stat-label">Draws</div></div>
+                    <div class="home-stat-card streak"><div class="stat-icon">&#128293;</div><div class="stat-value" id="statStreak">0</div><div class="stat-label">Win Streak</div></div>
+                </div>
+                <div class="home-winrate-section">
+                    <div class="home-winrate-label"><span>Win Rate</span><span id="winRatePct">&mdash;</span></div>
+                    <div class="home-winrate-bar">
+                        <div class="winrate-fill wins"   id="wrFillWin"></div>
+                        <div class="winrate-fill draws"  id="wrFillDraw"></div>
+                        <div class="winrate-fill losses" id="wrFillLoss"></div>
+                    </div>
+                    <div class="home-winrate-legend">
+                        <span class="legend-dot win"></span><span>Wins</span>
+                        <span class="legend-dot draw"></span><span>Draws</span>
+                        <span class="legend-dot loss"></span><span>Losses</span>
+                    </div>
+                </div>
+                <div class="home-bottom-row">
+                    <div class="home-section">
+                        <div class="home-section-title">Recent Games</div>
+                        <div class="home-history-list" id="homeHistoryList">
+                            <div class="home-history-empty">No games played yet this session.<br>Start a game to see your history here.</div>
+                        </div>
+                    </div>
+                    <div class="home-section">
+                        <div class="home-section-title">Achievements</div>
+                        <div class="home-achievements-grid" id="homeAchievements"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ANALYSIS OVERLAY -->
+    <div id="analysisOverlay">
+        <div class="analysis-layout">
+            <aside class="analysis-left-nav">
+                <div class="logo">♔ ChessEngine</div>
+                <ul class="nav-links">
+                    <li id="homeNavBtnFromAnalysis"><span class="icon">🏠</span> Home</li>
+                    <li id="backToPlayBtn"><span class="icon">♟️</span> Play</li>
+                    <li class="active"><span class="icon">📊</span> Analyze</li>
+                </ul>
+            </aside>
+
+            <main class="analysis-board-area">
+                <div id="analysisStatus">Game Analysis</div>
+                <div id="analysisOpening" class="analysis-opening-badge"></div>
+
+                <div class="board-profile opponent-profile">
+                    <div class="player-info"><div class="avatar">🤖</div><span id="analysisBlackLabel">Black</span></div>
+                </div>
+
+                <div id="analysisBoardContainer">
+                    <div id="analysisEvalBar">
+                        <div id="analysisEvalFill"></div>
+                    </div>
+                    <div id="analysisBoard"></div>
+                    <div id="analysisBoardControls">
+                        <button id="analysisFlipBtn" title="Flip Board">&#x1F503;</button>
+                    </div>
+                </div>
+
+                <div class="board-profile player-profile">
+                    <div class="player-info"><div class="avatar">♙</div><span id="analysisWhiteLabel">White</span></div>
+                </div>
+
+                <div class="analysis-nav-buttons">
+                    <button class="btn-outline" id="anaFirstBtn">⏮</button>
+                    <button class="btn-outline" id="anaPrevBtn">◀</button>
+                    <button class="btn-outline" id="anaNextBtn">▶</button>
+                    <button class="btn-outline" id="anaLastBtn">⏭</button>
+                </div>
+            </main>
+
+            <aside class="analysis-right-panel">
+                <div class="panel-header">
+                    <span>Analysis</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <button id="loadPgnBtn" class="btn-outline" style="padding:4px 10px;font-size:11px;font-weight:700;">&#128196; Load PGN</button>
+                        <span id="analysisMoveLabel" style="font-size:12px;color:#6b7280;font-weight:500;">—</span>
+                    </div>
+                </div>
+                <div id="analysisLoadingBanner">
+                    <div class="spinner"></div>
+                    <span id="analysisLoadingText">Analyzing position...</span>
+                </div>
+
+                <div class="analysis-eval-summary" id="analysisEvalSummary">
+                    <div class="eval-score-box" id="evalScoreBox">0.0</div>
+                    <div class="eval-best-move" id="evalBestMove">Best: —</div>
+                    <div class="eval-depth" id="evalDepth">Depth: —</div>
+                </div>
+
+                <div class="analysis-accuracy-row" id="analysisAccuracyRow">
+                    <div class="acc-block brilliant"><span class="acc-icon">★</span><span id="cntBrilliant">0</span><span class="acc-label">Brilliant</span></div>
+                    <div class="acc-block best"><span class="acc-icon">✓</span><span id="cntBest">0</span><span class="acc-label">Best</span></div>
+                    <div class="acc-block inaccuracy"><span class="acc-icon">?!</span><span id="cntInaccuracy">0</span><span class="acc-label">Inaccuracy</span></div>
+                    <div class="acc-block mistake"><span class="acc-icon">?</span><span id="cntMistake">0</span><span class="acc-label">Mistake</span></div>
+                    <div class="acc-block blunder"><span class="acc-icon">??</span><span id="cntBlunder">0</span><span class="acc-label">Blunder</span></div>
+                </div>
+
+                <p class="section-title">Move List</p>
+                <div class="analysis-history-list" id="analysisMoveList"></div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- PERSPECTIVE PICKER MODAL -->
+    <div id="perspectiveModal">
+        <div class="perspective-content">
+            <h2>&#128202; Analyze as...</h2>
+            <p class="perspective-subtitle">Choose whose moves to rate and count</p>
+            <div class="perspective-options">
+                <button class="perspective-btn" data-perspective="white">
+                    <span class="persp-piece">&#9812;</span>
+                    <span class="persp-label">White</span>
+                </button>
+                <button class="perspective-btn" data-perspective="black">
+                    <span class="persp-piece">&#9818;</span>
+                    <span class="persp-label">Black</span>
+                </button>
+                <button class="perspective-btn" data-perspective="both">
+                    <span class="persp-piece">&#9812;&#9818;</span>
+                    <span class="persp-label">Both Players</span>
+                </button>
+            </div>
+            <button id="cancelPerspectiveBtn" class="btn-outline" style="margin-top:10px;width:100%;padding:9px;">Cancel</button>
+        </div>
+    </div>
+
     <div id="settingsModal">
         <div class="settings-content">
             <h2>Game Settings</h2>
@@ -132,6 +286,42 @@
         </div>
     </div>
     
+    <!-- PGN IMPORT MODAL -->
+    <div id="pgnModal">
+        <div class="pgn-modal-content">
+            <div class="pgn-modal-header">
+                <h2>&#128196; Load PGN</h2>
+                <button id="closePgnBtn" class="pgn-close-btn">&times;</button>
+            </div>
+
+            <div class="pgn-tabs">
+                <button class="pgn-tab active" data-tab="paste">&#128203; Paste PGN</button>
+                <button class="pgn-tab" data-tab="upload">&#128193; Upload File</button>
+            </div>
+
+            <div id="pgnTabPaste" class="pgn-tab-content active">
+                <textarea id="pgnTextarea" placeholder='Paste your PGN here...&#10;&#10;Example:&#10;1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O'></textarea>
+                <div class="pgn-error" id="pgnErrorPaste"></div>
+            </div>
+
+            <div id="pgnTabUpload" class="pgn-tab-content">
+                <label class="pgn-dropzone" id="pgnDropzone" for="pgnFileInput">
+                    <div class="pgn-drop-icon">&#128196;</div>
+                    <div class="pgn-drop-title">Drop your .pgn file here</div>
+                    <div class="pgn-drop-sub">or click to browse</div>
+                    <input type="file" id="pgnFileInput" accept=".pgn,.txt" style="display:none">
+                    <div class="pgn-filename" id="pgnFilename"></div>
+                </label>
+                <div class="pgn-error" id="pgnErrorUpload"></div>
+            </div>
+
+            <div class="pgn-modal-footer">
+                <button id="closePgnBtn2" class="btn-outline">Cancel</button>
+                <button id="analyzePgnBtn" class="btn-primary">Analyze Game</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
