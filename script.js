@@ -135,12 +135,12 @@ function updateCapturedPieces() {
     var counts = { 'w': { 'q': 0, 'r': 0, 'b': 0, 'n': 0, 'p': 0 }, 'b': { 'q': 0, 'r': 0, 'b': 0, 'n': 0, 'p': 0 } };
     var sW = 0; var sB = 0; var vals = { 'q': 9, 'r': 5, 'b': 3, 'n': 3, 'p': 1 };
     var boardState = game.board();
-    for (var i=0; i<8; i++) for (var j=0; j<8; j++) if (boardState[i][j]) { counts[boardState[i][j].color][boardState[i][j].type]++; if (boardState[i][j].color === 'w') sW += vals[boardState[i][j].type]; else sB += vals[boardState[i][j].type]; }
+    for (var i=0; i<<8; i++) for (var j=0; j<<8; j++) if (boardState[i][j]) { counts[boardState[i][j].color][boardState[i][j].type]++; if (boardState[i][j].color === 'w') sW += vals[boardState[i][j].type]; else sB += vals[boardState[i][j].type]; }
     var wHTML = ''; var bHTML = ''; var order = ['q', 'r', 'b', 'n', 'p'];
     
     order.forEach(function(t) {
-        for(var i=0; i<starts['b'][t]-counts['b'][t]; i++) wHTML += '<img src="https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/b' + t.toUpperCase() + '.png">';
-        for(var i=0; i<starts['w'][t]-counts['w'][t]; i++) bHTML += '<img src="https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/w' + t.toUpperCase() + '.png">';
+        for(var i=0; i<<starts['b'][t]-counts['b'][t]; i++) wHTML += '<img src="https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/b' + t.toUpperCase() + '.png">';
+        for(var i=0; i<<starts['w'][t]-counts['w'][t]; i++) bHTML += '<img src="https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/w' + t.toUpperCase() + '.png">';
     });
     
     if (sW > sB) wHTML += '<span class="advantage">+' + (sW - sB) + '</span>'; else if (sB > sW) bHTML += '<span class="advantage">+' + (sB - sW) + '</span>';
@@ -157,7 +157,7 @@ function updateStatus() {
     if (game.in_checkmate()) {
         clearInterval(timerInterval);
         var winner = game.turn() === 'w' ? 'Black' : 'White';
-        $status.text('Checkmate! ' + winner + ' wins! 🎉');
+        $status.text('Checkmate! ' + winner + ' wins!');
         confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
         var playerColor = aiColor === 'b' ? 'w' : 'b';
         var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish (' + (engineSkill===20?'GM':engineSkill===10?'Adv':'Beg') + ')';
@@ -264,7 +264,7 @@ $('#resignBtn').on('click', function() {
 $('#drawBtn').on('click', function() {
     if (game.game_over() || !gameStarted) return;
     clearInterval(timerInterval); gameStarted = false;
-    $status.text('Draw agreed. 🤝');
+    $status.text('Draw agreed.');
     endSound.play();
     var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish';
     if (typeof recordGameResult !== 'undefined') recordGameResult('draw', game.history().length, opp, 'agreement');
@@ -293,14 +293,16 @@ function restartGame() {
     
     if (gameMode === 'pvp') { 
         $('.opponent-profile .player-info span').text('Player 2 (' + (aiColor === 'w' ? 'White' : 'Black') + ')'); 
-        $('.opponent-profile .avatar').text('👤');
+        $('.opponent-profile .avatar').text('P2');
         $('.player-profile .player-info span').text('Player 1 (' + (aiColor === 'w' ? 'Black' : 'White') + ')'); 
+        $('.player-profile .avatar').text('P1');
         $('.timer').show();
     } else { 
         var diffText = (engineSkill === 20) ? 'Grandmaster' : (engineSkill === 10 ? 'Advanced' : 'Beginner');
         $('.opponent-profile .player-info span').text('Stockfish AI (' + diffText + ')'); 
-        $('.opponent-profile .avatar').text('🤖');
+        $('.opponent-profile .avatar').text('AI');
         $('.player-profile .player-info span').text('You (' + (aiColor === 'w' ? 'Black' : 'White') + ')'); 
+        $('.player-profile .avatar').text('YOU');
         $('.timer').hide();
     }
     updateTimerUI(); $('#moveHistory').html(''); updateCapturedPieces(); highlightLastMove(null, null); updateStatus(); $('#openingTracker').hide(); $('#evalFill').css('height', '50%'); 
@@ -329,7 +331,6 @@ var analysisBestUCI    = [];
 var analysisBestSAN    = [];
 var analysisAnnotations= [];
 var analysisWorker     = null;
-var analysisPieceTheme = pieceThemeStyle;
 var analysisPerspective = 'both';
 var _pendingAnalysisCallback = null;
 
@@ -777,7 +778,7 @@ $(document).on('click', '.ana-move-cell[data-idx]', function() {
 });
 
 $(document).on('keydown', function(e) {
-    if ($('#puzzleOverlay').hasClass('open')) return; // let puzzle handle its own keys
+    if ($('#puzzleOverlay').hasClass('open')) return;
     if (!$('#analysisOverlay').hasClass('open')) return;
     if (e.key === 'ArrowLeft' && analysisMoveIndex > 0) { analysisMoveIndex--; renderAnalysisPosition(); }
     if (e.key === 'ArrowRight' && analysisMoveIndex < analysisHistory.length - 1) { analysisMoveIndex++; renderAnalysisPosition(); }
@@ -806,12 +807,12 @@ var sessionStats = {
 };
 
 var ACHIEVEMENTS = [
-    { id: 'first_blood',    icon: '⚔️',  name: 'First Move',      desc: 'Play your first game',        check: function(s){ return s.played >= 1; } },
-    { id: 'winner',         icon: '🏆',  name: 'Winner!',         desc: 'Win your first game',         check: function(s){ return s.wins >= 1; } },
-    { id: 'hat_trick',      icon: '🎩',  name: 'Hat Trick',       desc: 'Win 3 games in a row',        check: function(s){ return s.bestStreak >= 3; } },
-    { id: 'veteran',        icon: '🛡️', name: 'Veteran',         desc: 'Play 5 games',                check: function(s){ return s.played >= 5; } },
-    { id: 'checkmate_king', icon: '👑',  name: 'Checkmate King',  desc: 'Win by checkmate',            check: function(s){ return s.checkmates >= 1; } },
-    { id: 'comeback',       icon: '💪',  name: 'Never Give Up',   desc: 'Win after losing a game',     check: function(s){
+    { id: 'first_blood',    icon: '<i class="ph ph-star"></i>',  name: 'First Move',      desc: 'Play your first game',        check: function(s){ return s.played >= 1; } },
+    { id: 'winner',         icon: '<i class="ph ph-trophy"></i>',  name: 'Winner!',         desc: 'Win your first game',         check: function(s){ return s.wins >= 1; } },
+    { id: 'hat_trick',      icon: '<i class="ph ph-crown"></i>',  name: 'Hat Trick',       desc: 'Win 3 games in a row',        check: function(s){ return s.bestStreak >= 3; } },
+    { id: 'veteran',        icon: '<i class="ph ph-shield"></i>', name: 'Veteran',         desc: 'Play 5 games',                check: function(s){ return s.played >= 5; } },
+    { id: 'checkmate_king', icon: '<i class="ph ph-crown"></i>',  name: 'Checkmate King',  desc: 'Win by checkmate',            check: function(s){ return s.checkmates >= 1; } },
+    { id: 'comeback',       icon: '<i class="ph ph-trend-up"></i>',  name: 'Never Give Up',   desc: 'Win after losing a game',     check: function(s){
         var hadLoss = false;
         for (var i = 0; i < s.gameHistory.length; i++) {
             if (s.gameHistory[i].result === 'loss' || s.gameHistory[i].result === 'resign') hadLoss = true;
@@ -819,11 +820,11 @@ var ACHIEVEMENTS = [
         }
         return false;
     }},
-    { id: 'dominator',      icon: '🔥',  name: 'Dominator',       desc: 'Win 5 games',                 check: function(s){ return s.wins >= 5; } },
-    { id: 'analyst',        icon: '📊',  name: 'Analyst',         desc: 'Analyze a completed game',    check: function(s){ return s.analyzed >= 1; } },
-    { id: 'puzzle_starter', icon: '🧩',  name: 'Puzzle Starter',  desc: 'Solve your first puzzle',     check: function(s){ return (puzzleStats.solved || 0) >= 1; } },
-    { id: 'puzzle_master',  icon: '🧠',  name: 'Puzzle Master',   desc: 'Solve 10 puzzles',            check: function(s){ return (puzzleStats.solved || 0) >= 10; } },
-    { id: 'puzzle_streak',  icon: '⚡',  name: 'On Fire',         desc: '5 puzzles solved in a row',   check: function(s){ return (puzzleStats.bestStreak || 0) >= 5; } },
+    { id: 'dominator',      icon: '<i class="ph ph-fire"></i>',  name: 'Dominator',       desc: 'Win 5 games',                 check: function(s){ return s.wins >= 5; } },
+    { id: 'analyst',        icon: '<i class="ph ph-chart-line-up"></i>',  name: 'Analyst',         desc: 'Analyze a completed game',    check: function(s){ return s.analyzed >= 1; } },
+    { id: 'puzzle_starter', icon: '<i class="ph ph-puzzle-piece"></i>',  name: 'Puzzle Starter',  desc: 'Solve your first puzzle',     check: function(s){ return (puzzleStats.solved || 0) >= 1; } },
+    { id: 'puzzle_master',  icon: '<i class="ph ph-graduation-cap"></i>',  name: 'Puzzle Master',   desc: 'Solve 10 puzzles',            check: function(s){ return (puzzleStats.solved || 0) >= 10; } },
+    { id: 'puzzle_streak',  icon: '<i class="ph ph-lightning"></i>',  name: 'On Fire',         desc: '5 puzzles solved in a row',   check: function(s){ return (puzzleStats.bestStreak || 0) >= 5; } },
 ];
 
 function recordGameResult(result, moveCount, opponent, by) {
@@ -1081,17 +1082,13 @@ var puzzleStats = {
     attempted: 0, solved: 0, failed: 0,
     streak: 0, bestStreak: 0
 };
-var currentPuzzle      = null;   // { fen, moves[], theme, rating, playerColor }
-var puzzleMoveIndex    = 0;      // which move in the solution we're at
-var puzzleState        = 'idle'; // 'idle' | 'playing' | 'solved' | 'failed'
+var currentPuzzle      = null;
+var puzzleMoveIndex    = 0;
+var puzzleState        = 'idle';
 var puzzleDifficulty   = 'medium';
 var puzzlePlayerColor  = 'w';
 var puzzleHintUsed     = false;
 
-// ── PUZZLE DATABASE ──────────────────────────────────────────
-// Each puzzle: { fen, moves (UCI array), theme, rating }
-// moves[0] is the "setup" move (opponent's last move), moves[1..] are the solution.
-// Player must find moves[1], moves[3], etc.
 var PUZZLE_DB = {
 easy: [
   { fen: "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", moves: ["h5f7"], theme: "Scholar's Mate", rating: 600 },
@@ -1104,7 +1101,7 @@ easy: [
   { fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4", moves: ["c2c3"], theme: "Preparing d4", rating: 550 },
   { fen: "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2", moves: ["d2d4"], theme: "French Defense Center", rating: 500 },
   { fen: "rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2", moves: ["d2d4"], theme: "Caro-Kann Center", rating: 500 },
-  { fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2BPP3/5N2/PPP2PPP/RNBQK2R b KQkq d3 0 4", moves: ["e5d4"], theme: "Capture in Center", rating: 600 },
+  { fen: "r1bqk2r/ppp2ppp/2n2n2/2b1p3/2BPP3/5N2/PPP2PPP/RNBQK2R b KQkq d3 0 4", moves: ["e5d4"], theme: "Capture in Center", rating: 600 },
   { fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1", moves: ["e7e5"], theme: "Mirror Center", rating: 450 },
 ],
 medium: [
@@ -1185,44 +1182,29 @@ function loadNewPuzzle() {
     puzzleHintUsed = false;
 
     puzzleGame.load(pz.fen);
+    puzzlePlayerColor = puzzleGame.turn();
 
-    // Determine player color: whoever's turn it is to play moves[0] is the opponent.
-    // After moves[0] the player responds.
-    // Actually in standard puzzle format, fen is position BEFORE the setup move.
-    // The setup move is made first, then the player finds the answer.
-    // For our simple puzzles, moves has just 1 move = the correct answer, and FEN is the position where it's player's turn.
-    
-    // Determine who moves in the FEN
-    puzzlePlayerColor = puzzleGame.turn(); // the player is whoever is to move
-
-    // Orient the board
     puzzleBoard.orientation(puzzlePlayerColor === 'w' ? 'white' : 'black');
     puzzleBoard.position(pz.fen, false);
 
-    // Update labels
     var youLabel = puzzlePlayerColor === 'w' ? 'You (White)' : 'You (Black)';
     var oppLabel = puzzlePlayerColor === 'w' ? 'Opponent (Black)' : 'Opponent (White)';
     $('#puzzleWhiteLabel').text(youLabel);
     $('#puzzleBlackLabel').text(oppLabel);
 
-    // Eval bar
     var fill = puzzlePlayerColor === 'w' ? 65 : 35;
     $('#puzzleEvalFill').css('height', fill + '%');
 
-    // Status
-    $('#puzzleStatus').html('Find the best move! <span class="puzzle-turn-badge">' + (puzzlePlayerColor === 'w' ? 'White' : 'Black') + ' to play</span>');
+    $('#puzzleStatus').text('Find the best move!');
     $('#puzzleThemeBadge').text(pz.theme);
 
-    // Info panel
     $('#pzInfoTheme').text(pz.theme);
     $('#pzInfoMoves').text(pz.moves.length + (pz.moves.length === 1 ? ' move' : ' moves'));
     $('#pzInfoRating').text(pz.rating);
 
-    // Hide solution section
     $('#puzzleSolutionSection').hide();
     $('#puzzleSolutionList').html('');
 
-    // Clear highlights
     $('#puzzleBoard .square-55d63').removeClass('highlight-move puzzle-correct puzzle-wrong');
     $('#puzzleHintArrow').remove();
 
@@ -1233,7 +1215,6 @@ function loadNewPuzzle() {
 function onPuzzleDragStart(source, piece) {
     if (puzzleState !== 'playing') return false;
     if (puzzleGame.game_over()) return false;
-    // Only allow the player's pieces
     if (puzzlePlayerColor === 'w' && piece.search(/^b/) !== -1) return false;
     if (puzzlePlayerColor === 'b' && piece.search(/^w/) !== -1) return false;
     if (puzzleGame.turn() !== puzzlePlayerColor) return false;
@@ -1258,31 +1239,25 @@ function onPuzzleDrop(source, target) {
     var playerUCI = source + target + (move.promotion || '');
     var expectedUCI = currentPuzzle.moves[puzzleMoveIndex];
 
-    // Check if correct
     if (playerUCI === expectedUCI) {
-        // Correct move!
         playMoveSound(move);
         puzzleBoard.position(puzzleGame.fen());
         highlightPuzzleSquare(source, target, 'correct');
         puzzleMoveIndex++;
 
         if (puzzleMoveIndex >= currentPuzzle.moves.length) {
-            // Puzzle solved!
             puzzleSolved();
         } else {
-            // Opponent responds, then player goes again
-            $('#puzzleStatus').html('Correct! ✅ Find the next move...');
+            $('#puzzleStatus').text('Correct! Find the next move...');
             setTimeout(function() {
                 makeOpponentPuzzleMove();
             }, 600);
         }
     } else {
-        // Wrong move — undo it
         puzzleGame.undo();
         puzzleBoard.position(puzzleGame.fen());
         highlightPuzzleSquare(source, target, 'wrong');
 
-        // Play a wrong sound
         captureSound.currentTime = 0;
         captureSound.play();
 
@@ -1308,7 +1283,7 @@ function makeOpponentPuzzleMove() {
         moveSound.play();
         highlightPuzzleSquare(from, to, null);
         puzzleMoveIndex++;
-        $('#puzzleStatus').html('Your turn! Find the best move...');
+        $('#puzzleStatus').text('Your turn! Find the best move...');
     }
 }
 
@@ -1333,7 +1308,7 @@ function puzzleSolved() {
     puzzleStats.streak++;
     if (puzzleStats.streak > puzzleStats.bestStreak) puzzleStats.bestStreak = puzzleStats.streak;
     
-    $('#puzzleStatus').html('🎉 Puzzle Solved! Excellent!');
+    $('#puzzleStatus').text('Puzzle Solved! Excellent!');
     $('#puzzleEvalFill').css('height', puzzlePlayerColor === 'w' ? '85%' : '15%');
     
     endSound.currentTime = 0;
@@ -1350,7 +1325,7 @@ function puzzleFailed() {
     puzzleStats.failed++;
     puzzleStats.streak = 0;
 
-    $('#puzzleStatus').html('❌ Incorrect. The solution is shown below.');
+    $('#puzzleStatus').text('Incorrect. The solution is shown below.');
     
     showPuzzleSolution();
     updatePuzzleStats();
@@ -1368,7 +1343,7 @@ function showPuzzleSolution() {
         var promo = uci[4] || undefined;
         var mv = tempG.move({ from: from, to: to, promotion: promo });
         var san = mv ? mv.san : uci;
-        var isPlayer = (i % 2 === 0); // first move = player (since setup was already done in FEN)
+        var isPlayer = (i % 2 === 0);
         html += '<div class="puzzle-solution-move ' + (isPlayer ? 'player-move' : 'opponent-move') + '">';
         html += '<span class="sol-num">' + (i + 1) + '.</span>';
         html += '<span class="sol-san">' + san + '</span>';
@@ -1390,13 +1365,11 @@ $('#puzzleHintBtn').on('click', function() {
 
     var fromSq = uci.slice(0, 2);
 
-    // Highlight the source square
     $('#puzzleBoard .square-55d63').removeClass('puzzle-hint');
     $('#puzzleBoard .square-' + fromSq).addClass('puzzle-hint');
 
-    $('#puzzleStatus').html('💡 Hint: Try moving the highlighted piece!');
+    $('#puzzleStatus').text('Hint: Try moving the highlighted piece!');
 
-    // Draw arrow
     drawPuzzleHintArrow(uci);
 });
 
@@ -1508,7 +1481,7 @@ $('#puzzleRetryBtn').on('click', function() {
     $('#puzzleBoard .square-55d63').removeClass('highlight-move puzzle-correct puzzle-wrong puzzle-hint');
     $('#puzzleHintArrow').remove();
     $('#puzzleSolutionSection').hide();
-    $('#puzzleStatus').html('Find the best move! <span class="puzzle-turn-badge">' + (puzzlePlayerColor === 'w' ? 'White' : 'Black') + ' to play</span>');
+    $('#puzzleStatus').text('Find the best move!');
 });
 
 $('#puzzleFlipBtn').on('click', function() {
@@ -1545,18 +1518,15 @@ $('#mobileNavBackdrop').on('click', closeMobileNav);
 $(document).on('click', '.mobile-nav-item', function() {
     var target = $(this).data('target');
     
-    // Update active state
     $('.mobile-nav-item').removeClass('active');
     $(this).addClass('active');
     
     closeMobileNav();
     
-    // Close all overlays first
     closeHome();
     closePuzzles();
     closeAnalysis();
     
-    // Navigate
     switch(target) {
         case 'home':
             openHome();
@@ -1588,7 +1558,6 @@ function syncMobileNavState(active) {
     $('.mobile-nav-item[data-target="' + active + '"]').addClass('active');
 }
 
-// Extend existing nav handlers to also sync mobile nav
 var _origOpenHome = openHome;
 openHome = function() {
     _origOpenHome();
@@ -1652,16 +1621,14 @@ function applyTheme(dark) {
     isDarkMode = dark;
     if (dark) {
         $('body').addClass('dark');
-        $('.theme-toggle-btn').text('☀️');
+        $('.theme-toggle-btn').html('<i class="ph ph-sun"></i>');
     } else {
         $('body').removeClass('dark');
-        $('.theme-toggle-btn').text('🌙');
+        $('.theme-toggle-btn').html('<i class="ph ph-moon"></i>');
     }
-    // Persist preference
     try { localStorage.setItem('chess-dark-mode', dark ? '1' : '0'); } catch(e) {}
 }
 
-// Load saved preference (or respect system preference)
 (function() {
     var saved = null;
     try { saved = localStorage.getItem('chess-dark-mode'); } catch(e) {}
@@ -1674,15 +1641,12 @@ function applyTheme(dark) {
     }
 })();
 
-// All toggle buttons (desktop sidebars + mobile topbar + mobile drawer)
 $(document).on('click', '.theme-toggle-btn', function() {
     applyTheme(!isDarkMode);
 });
 
-// Listen for system theme changes
 if (window.matchMedia) {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-        // Only auto-switch if user hasn't manually set a preference
         var saved = null;
         try { saved = localStorage.getItem('chess-dark-mode'); } catch(err) {}
         if (saved === null) {

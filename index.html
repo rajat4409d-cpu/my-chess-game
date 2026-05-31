@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
     
     <link rel="stylesheet" href="style.css">
 </head>
@@ -19,39 +20,39 @@
         <button class="hamburger-btn" id="hamburgerBtn">
             <span></span><span></span><span></span>
         </button>
-        <div class="mobile-logo">♔ ChessEngine</div>
+        <div class="mobile-logo"><i class="ph ph-crown"></i> ChessEngine</div>
         <div class="mobile-topbar-spacer"></div>
-        <button class="theme-toggle-btn" id="mobileThemeToggle" title="Toggle Dark Mode">🌙</button>
+        <button class="theme-toggle-btn" id="mobileThemeToggle" title="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
     </div>
 
     <!-- MOBILE SLIDE-OUT NAV -->
     <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
     <nav class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
-            <div class="logo">♔ ChessEngine</div>
+            <div class="logo"><i class="ph ph-crown"></i> ChessEngine</div>
             <button class="mobile-nav-close" id="mobileNavClose">&times;</button>
         </div>
         <ul class="nav-links">
-            <li class="mobile-nav-item" data-target="home"><span class="icon">🏠</span> Home</li>
-            <li class="mobile-nav-item active" data-target="play"><span class="icon">♟️</span> Play</li>
-            <li class="mobile-nav-item" data-target="puzzles"><span class="icon">🧩</span> Puzzles</li>
-            <li class="mobile-nav-item" data-target="analyze"><span class="icon">📊</span> Analyze</li>
+            <li class="mobile-nav-item" data-target="home"><i class="ph ph-house"></i> Home</li>
+            <li class="mobile-nav-item active" data-target="play"><i class="ph ph-chess-knight"></i> Play</li>
+            <li class="mobile-nav-item" data-target="puzzles"><i class="ph ph-puzzle-piece"></i> Puzzles</li>
+            <li class="mobile-nav-item" data-target="analyze"><i class="ph ph-chart-bar"></i> Analyze</li>
         </ul>
-        <div class="sidebar-bottom"><button class="theme-toggle-btn" title="Toggle Dark Mode">🌙</button></div>
+        <div class="sidebar-bottom"><button class="theme-toggle-btn" title="Toggle Dark Mode"><i class="ph ph-moon"></i></button></div>
     </nav>
 
     <div class="app-layout">
         
         <aside class="left-nav">
-            <div class="logo">♔ ChessEngine</div>
+            <div class="logo"><i class="ph ph-crown"></i> ChessEngine</div>
             <ul class="nav-links">
-                <li id="homeNavBtn"><span class="icon">🏠</span> Home</li>
-                <li id="playNavBtn" class="active"><span class="icon">♟️</span> Play</li>
-                <li id="puzzleNavBtn"><span class="icon">🧩</span> Puzzles</li>
-                <li id="analyzeNavBtn"><span class="icon">📊</span> Analyze</li>
+                <li id="homeNavBtn"><i class="ph ph-house"></i> Home</li>
+                <li id="playNavBtn" class="active"><i class="ph ph-chess-knight"></i> Play</li>
+                <li id="puzzleNavBtn"><i class="ph ph-puzzle-piece"></i> Puzzles</li>
+                <li id="analyzeNavBtn"><i class="ph ph-chart-bar"></i> Analyze</li>
             </ul>
             <div class="sidebar-bottom">
-                <button class="theme-toggle-btn" id="desktopThemeToggle" title="Toggle Dark Mode">🌙</button>
+                <button class="theme-toggle-btn" id="desktopThemeToggle" title="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
             </div>
         </aside>
 
@@ -60,7 +61,7 @@
             <div id="openingTracker">Standard Starting Position</div>
 
             <div class="board-profile opponent-profile">
-                <div class="player-info"><div class="avatar">🤖</div><span>Stockfish AI (Level 20)</span></div>
+                <div class="player-info"><div class="avatar">AI</div><span>Stockfish AI (Level 20)</span></div>
                 <div id="timerBlack" class="timer">10:00</div>
             </div>
             
@@ -70,7 +71,7 @@
                 </div>
                 <div id="myBoard"></div>
                 <div id="boardControls">
-                    <button id="flipBoardBtn" title="Flip Board">&#x1F503;</button>
+                    <button id="flipBoardBtn" title="Flip Board"><i class="ph ph-arrows-clockwise"></i></button>
                 </div>
                 
                 <div id="promotionMenu">
@@ -86,18 +87,18 @@
             </div>
 
             <div class="board-profile player-profile">
-                <div class="player-info"><div class="avatar">♙</div><span>You (White)</span></div>
+                <div class="player-info"><div class="avatar">P1</div><span>You (White)</span></div>
                 <div id="timerWhite" class="timer active">10:00</div>
             </div>
 
             <div class="action-buttons">
-                <button id="undoBtn" class="btn-outline" title="Undo Last Move">⟲ Undo</button>
-                <button id="drawBtn" class="btn-outline" title="Offer a Draw">½ Draw</button>
-                <button id="resignBtn" class="btn-outline btn-danger-outline" title="Resign Game">🏳️ Resign</button>
-                <button id="downloadPgnBtn" class="btn-outline" title="Download Match">📥 PGN</button>
-                <button id="resetBtn" class="btn-outline" title="Restart Game">Restart</button>
-                <button id="settingsBtn" class="btn-outline" title="Settings">⚙️</button>
-                <button id="showPanelBtn" class="btn-outline mobile-only-btn" title="Match Data">📋</button>
+                <button id="undoBtn" class="btn-outline" title="Undo Last Move"><i class="ph ph-arrow-u-up-left"></i> Undo</button>
+                <button id="drawBtn" class="btn-outline" title="Offer a Draw"><i class="ph ph-handshake"></i> Draw</button>
+                <button id="resignBtn" class="btn-outline btn-danger-outline" title="Resign Game"><i class="ph ph-flag"></i> Resign</button>
+                <button id="downloadPgnBtn" class="btn-outline" title="Download Match"><i class="ph ph-download"></i> PGN</button>
+                <button id="resetBtn" class="btn-outline" title="Restart Game"><i class="ph ph-arrow-counter-clockwise"></i> Restart</button>
+                <button id="settingsBtn" class="btn-outline" title="Settings"><i class="ph ph-gear"></i></button>
+                <button id="showPanelBtn" class="btn-outline mobile-only-btn" title="Match Data"><i class="ph ph-list"></i></button>
             </div>
         </main>
 
@@ -123,31 +124,31 @@
     <div id="homeOverlay">
         <div class="home-layout">
             <aside class="home-left-nav">
-                <div class="logo">&#9820; ChessEngine</div>
+                <div class="logo"><i class="ph ph-crown"></i> ChessEngine</div>
                 <ul class="nav-links">
-                    <li class="active"><span class="icon">&#127968;</span> Home</li>
-                    <li id="homeToPlayBtn"><span class="icon">&#9823;&#65039;</span> Play</li>
-                    <li id="homeToPuzzleBtn"><span class="icon">🧩</span> Puzzles</li>
-                    <li id="homeToAnalyzeBtn"><span class="icon">&#128202;</span> Analyze</li>
+                    <li class="active"><i class="ph ph-house"></i> Home</li>
+                    <li id="homeToPlayBtn"><i class="ph ph-chess-knight"></i> Play</li>
+                    <li id="homeToPuzzleBtn"><i class="ph ph-puzzle-piece"></i> Puzzles</li>
+                    <li id="homeToAnalyzeBtn"><i class="ph ph-chart-bar"></i> Analyze</li>
                 </ul>
-                <div class="sidebar-bottom"><button class="theme-toggle-btn" title="Toggle Dark Mode">🌙</button></div>
+                <div class="sidebar-bottom"><button class="theme-toggle-btn" title="Toggle Dark Mode"><i class="ph ph-moon"></i></button></div>
             </aside>
             <main class="home-main">
                 <div class="home-profile-header">
-                    <div class="home-avatar">&#9818;</div>
+                    <div class="home-avatar"><i class="ph ph-user"></i></div>
                     <div class="home-profile-info">
                         <div class="home-username">Player</div>
                         <div class="home-subtitle">Session Profile &middot; ChessEngine</div>
                     </div>
-                    <button class="home-play-btn" id="homePlayNowBtn">&#9654; Play Now</button>
+                    <button class="home-play-btn" id="homePlayNowBtn"><i class="ph ph-play"></i> Play Now</button>
                 </div>
 
                 <div class="home-stat-cards">
-                    <div class="home-stat-card"><div class="stat-icon">&#127918;</div><div class="stat-value" id="statGamesPlayed">0</div><div class="stat-label">Games Played</div></div>
-                    <div class="home-stat-card win"><div class="stat-icon">&#127942;</div><div class="stat-value" id="statWins">0</div><div class="stat-label">Wins</div></div>
-                    <div class="home-stat-card loss"><div class="stat-icon">&#128128;</div><div class="stat-value" id="statLosses">0</div><div class="stat-label">Losses</div></div>
-                    <div class="home-stat-card draw"><div class="stat-icon">&#129309;</div><div class="stat-value" id="statDraws">0</div><div class="stat-label">Draws</div></div>
-                    <div class="home-stat-card streak"><div class="stat-icon">&#128293;</div><div class="stat-value" id="statStreak">0</div><div class="stat-label">Win Streak</div></div>
+                    <div class="home-stat-card"><div class="stat-icon"><i class="ph ph-game-controller"></i></div><div class="stat-value" id="statGamesPlayed">0</div><div class="stat-label">Games Played</div></div>
+                    <div class="home-stat-card win"><div class="stat-icon"><i class="ph ph-trophy"></i></div><div class="stat-value" id="statWins">0</div><div class="stat-label">Wins</div></div>
+                    <div class="home-stat-card loss"><div class="stat-icon"><i class="ph ph-skull"></i></div><div class="stat-value" id="statLosses">0</div><div class="stat-label">Losses</div></div>
+                    <div class="home-stat-card draw"><div class="stat-icon"><i class="ph ph-handshake"></i></div><div class="stat-value" id="statDraws">0</div><div class="stat-label">Draws</div></div>
+                    <div class="home-stat-card streak"><div class="stat-icon"><i class="ph ph-fire"></i></div><div class="stat-value" id="statStreak">0</div><div class="stat-label">Win Streak</div></div>
                 </div>
 
                 <div class="home-winrate-section">
@@ -184,14 +185,14 @@
     <div id="puzzleOverlay">
         <div class="puzzle-layout">
             <aside class="puzzle-left-nav">
-                <div class="logo">♔ ChessEngine</div>
+                <div class="logo"><i class="ph ph-crown"></i> ChessEngine</div>
                 <ul class="nav-links">
-                    <li id="puzzleToHomeBtn"><span class="icon">🏠</span> Home</li>
-                    <li id="puzzleToPlayBtn"><span class="icon">♟️</span> Play</li>
-                    <li class="active"><span class="icon">🧩</span> Puzzles</li>
-                    <li id="puzzleToAnalyzeBtn"><span class="icon">📊</span> Analyze</li>
+                    <li id="puzzleToHomeBtn"><i class="ph ph-house"></i> Home</li>
+                    <li id="puzzleToPlayBtn"><i class="ph ph-chess-knight"></i> Play</li>
+                    <li class="active"><i class="ph ph-puzzle-piece"></i> Puzzles</li>
+                    <li id="puzzleToAnalyzeBtn"><i class="ph ph-chart-bar"></i> Analyze</li>
                 </ul>
-                <div class="sidebar-bottom"><button class="theme-toggle-btn" title="Toggle Dark Mode">🌙</button></div>
+                <div class="sidebar-bottom"><button class="theme-toggle-btn" title="Toggle Dark Mode"><i class="ph ph-moon"></i></button></div>
             </aside>
 
             <main class="puzzle-board-area">
@@ -199,7 +200,7 @@
                 <div id="puzzleThemeBadge"></div>
 
                 <div class="board-profile opponent-profile">
-                    <div class="player-info"><div class="avatar">🧩</div><span id="puzzleBlackLabel">Opponent</span></div>
+                    <div class="player-info"><div class="avatar">PZL</div><span id="puzzleBlackLabel">Opponent</span></div>
                 </div>
 
                 <div id="puzzleBoardContainer">
@@ -208,18 +209,18 @@
                     </div>
                     <div id="puzzleBoard"></div>
                     <div id="puzzleBoardControls">
-                        <button id="puzzleFlipBtn" title="Flip Board">&#x1F503;</button>
+                        <button id="puzzleFlipBtn" title="Flip Board"><i class="ph ph-arrows-clockwise"></i></button>
                     </div>
                 </div>
 
                 <div class="board-profile player-profile">
-                    <div class="player-info"><div class="avatar">🧠</div><span id="puzzleWhiteLabel">You</span></div>
+                    <div class="player-info"><div class="avatar">YOU</div><span id="puzzleWhiteLabel">You</span></div>
                 </div>
 
                 <div class="puzzle-action-buttons">
-                    <button id="puzzleHintBtn" class="btn-outline" title="Get a hint">💡 Hint</button>
-                    <button id="puzzleRetryBtn" class="btn-outline" title="Retry this puzzle">🔄 Retry</button>
-                    <button id="puzzleNextBtn" class="btn-primary" title="Next Puzzle">Next Puzzle →</button>
+                    <button id="puzzleHintBtn" class="btn-outline" title="Get a hint"><i class="ph ph-lightbulb"></i> Hint</button>
+                    <button id="puzzleRetryBtn" class="btn-outline" title="Retry this puzzle"><i class="ph ph-arrow-counter-clockwise"></i> Retry</button>
+                    <button id="puzzleNextBtn" class="btn-primary" title="Next Puzzle">Next Puzzle <i class="ph ph-arrow-right"></i></button>
                 </div>
             </main>
 
@@ -230,9 +231,9 @@
                 <div class="puzzle-difficulty-section">
                     <p class="section-title">Difficulty</p>
                     <div class="puzzle-diff-btns">
-                        <button class="puzzle-diff-btn" data-diff="easy">♟ Easy</button>
-                        <button class="puzzle-diff-btn active" data-diff="medium">♞ Medium</button>
-                        <button class="puzzle-diff-btn" data-diff="hard">♛ Hard</button>
+                        <button class="puzzle-diff-btn" data-diff="easy">Easy</button>
+                        <button class="puzzle-diff-btn active" data-diff="medium">Medium</button>
+                        <button class="puzzle-diff-btn" data-diff="hard">Hard</button>
                     </div>
                 </div>
 
@@ -254,7 +255,7 @@
                         </div>
                         <div class="puzzle-stat-item streak">
                             <div class="puzzle-stat-value" id="pzStatStreak">0</div>
-                            <div class="puzzle-stat-label">Streak 🔥</div>
+                            <div class="puzzle-stat-label">Streak</div>
                         </div>
                     </div>
                     <div class="puzzle-accuracy-bar-container">
@@ -300,20 +301,20 @@
     <div id="analysisOverlay">
         <div class="analysis-layout">
             <aside class="analysis-left-nav">
-                <div class="logo">♔ ChessEngine</div>
+                <div class="logo"><i class="ph ph-crown"></i> ChessEngine</div>
                 <ul class="nav-links">
-                    <li id="homeNavBtnFromAnalysis"><span class="icon">🏠</span> Home</li>
-                    <li id="backToPlayBtn"><span class="icon">♟️</span> Play</li>
-                    <li id="analysisToPuzzleBtn"><span class="icon">🧩</span> Puzzles</li>
-                    <li class="active"><span class="icon">📊</span> Analyze</li>
+                    <li id="homeNavBtnFromAnalysis"><i class="ph ph-house"></i> Home</li>
+                    <li id="backToPlayBtn"><i class="ph ph-chess-knight"></i> Play</li>
+                    <li id="analysisToPuzzleBtn"><i class="ph ph-puzzle-piece"></i> Puzzles</li>
+                    <li class="active"><i class="ph ph-chart-bar"></i> Analyze</li>
                 </ul>
-                <div class="sidebar-bottom"><button class="theme-toggle-btn" title="Toggle Dark Mode">🌙</button></div>
+                <div class="sidebar-bottom"><button class="theme-toggle-btn" title="Toggle Dark Mode"><i class="ph ph-moon"></i></button></div>
             </aside>
             <main class="analysis-board-area">
                 <div id="analysisStatus">Game Analysis</div>
                 <div id="analysisOpening" class="analysis-opening-badge"></div>
                 <div class="board-profile opponent-profile">
-                    <div class="player-info"><div class="avatar">🤖</div><span id="analysisBlackLabel">Black</span></div>
+                    <div class="player-info"><div class="avatar">AI</div><span id="analysisBlackLabel">Black</span></div>
                 </div>
                 <div id="analysisBoardContainer">
                     <div id="analysisEvalBar">
@@ -321,11 +322,11 @@
                     </div>
                     <div id="analysisBoard"></div>
                     <div id="analysisBoardControls">
-                        <button id="analysisFlipBtn" title="Flip Board">&#x1F503;</button>
+                        <button id="analysisFlipBtn" title="Flip Board"><i class="ph ph-arrows-clockwise"></i></button>
                     </div>
                 </div>
                 <div class="board-profile player-profile">
-                    <div class="player-info"><div class="avatar">♙</div><span id="analysisWhiteLabel">White</span></div>
+                    <div class="player-info"><div class="avatar">P1</div><span id="analysisWhiteLabel">White</span></div>
                 </div>
                 <div class="analysis-nav-buttons">
                     <button class="btn-outline" id="anaFirstBtn">⏮</button>
@@ -338,7 +339,7 @@
                 <div class="panel-header">
                     <span>Analysis</span>
                     <div style="display:flex;align-items:center;gap:8px;">
-                        <button id="loadPgnBtn" class="btn-outline" style="padding:4px 10px;font-size:11px;font-weight:700;">&#128196; Load PGN</button>
+                        <button id="loadPgnBtn" class="btn-outline" style="padding:4px 10px;font-size:11px;font-weight:700;"><i class="ph ph-file-text"></i> Load PGN</button>
                         <span id="analysisMoveLabel" style="font-size:12px;color:#6b7280;font-weight:500;">—</span>
                     </div>
                 </div>
@@ -367,19 +368,19 @@
     <!-- PERSPECTIVE PICKER MODAL -->
     <div id="perspectiveModal">
         <div class="perspective-content">
-            <h2>&#128202; Analyze as...</h2>
+            <h2><i class="ph ph-chart-bar"></i> Analyze as...</h2>
             <p class="perspective-subtitle">Choose whose moves to rate and count</p>
             <div class="perspective-options">
                 <button class="perspective-btn" data-perspective="white">
-                    <span class="persp-piece">&#9812;</span>
+                    <span class="persp-piece"><i class="ph ph-chess-queen"></i></span>
                     <span class="persp-label">White</span>
                 </button>
                 <button class="perspective-btn" data-perspective="black">
-                    <span class="persp-piece">&#9818;</span>
+                    <span class="persp-piece"><i class="ph ph-chess-king"></i></span>
                     <span class="persp-label">Black</span>
                 </button>
                 <button class="perspective-btn" data-perspective="both">
-                    <span class="persp-piece">&#9812;&#9818;</span>
+                    <span class="persp-piece"><i class="ph ph-users"></i></span>
                     <span class="persp-label">Both Players</span>
                 </button>
             </div>
@@ -429,12 +430,12 @@
     <div id="pgnModal">
         <div class="pgn-modal-content">
             <div class="pgn-modal-header">
-                <h2>&#128196; Load PGN</h2>
+                <h2><i class="ph ph-file-text"></i> Load PGN</h2>
                 <button id="closePgnBtn" class="pgn-close-btn">&times;</button>
             </div>
             <div class="pgn-tabs">
-                <button class="pgn-tab active" data-tab="paste">&#128203; Paste PGN</button>
-                <button class="pgn-tab" data-tab="upload">&#128193; Upload File</button>
+                <button class="pgn-tab active" data-tab="paste"><i class="ph ph-clipboard-text"></i> Paste PGN</button>
+                <button class="pgn-tab" data-tab="upload"><i class="ph ph-folder"></i> Upload File</button>
             </div>
             <div id="pgnTabPaste" class="pgn-tab-content active">
                 <textarea id="pgnTextarea" placeholder='Paste your PGN here...&#10;&#10;Example:&#10;1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O'></textarea>
@@ -442,7 +443,7 @@
             </div>
             <div id="pgnTabUpload" class="pgn-tab-content">
                 <label class="pgn-dropzone" id="pgnDropzone" for="pgnFileInput">
-                    <div class="pgn-drop-icon">&#128196;</div>
+                    <div class="pgn-drop-icon"><i class="ph ph-file-arrow-up"></i></div>
                     <div class="pgn-drop-title">Drop your .pgn file here</div>
                     <div class="pgn-drop-sub">or click to browse</div>
                     <input type="file" id="pgnFileInput" accept=".pgn,.txt" style="display:none">
@@ -458,5 +459,5 @@
     </div>
 
     <script src="script.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a048d0a4ad1f1b55',t:'MTc4MDI2MDI1MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

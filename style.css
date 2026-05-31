@@ -20,9 +20,9 @@ body {
 
 /* --- COLUMN 1: LEFT NAV --- */
 .left-nav { border-right: 1px solid #e5e7eb; padding: 24px; }
-.logo { font-size: 20px; font-weight: 800; color: #10b981; margin-bottom: 40px; }
+.logo { font-size: 20px; font-weight: 800; color: #10b981; margin-bottom: 40px; display: flex; align-items: center; gap: 8px; }
 .nav-links { list-style: none; padding: 0; margin: 0; }
-.nav-links li { padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; font-weight: 500; color: #4b5563; cursor: pointer; transition: all 0.15s; }
+.nav-links li { padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; font-weight: 500; color: #4b5563; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 10px; }
 .nav-links li:hover { background-color: #f3f4f6; }
 .nav-links li.active { background-color: #ecfdf5; color: #10b981; font-weight: 600; }
 .icon { margin-right: 10px; }
@@ -35,7 +35,7 @@ body {
 #myBoard { width: 520px; border-radius: 4px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 .board-profile { width: 100%; max-width: 550px; display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
 .player-info { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #374151; }
-.avatar { width: 32px; height: 32px; background: #f3f4f6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid #e5e7eb; }
+.avatar { width: 32px; height: 32px; background: #f3f4f6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; color: #6b7280; border: 1px solid #e5e7eb; }
 .timer { font-family: monospace; font-size: 18px; font-weight: 700; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; color: #6b7280; border: 1px solid #e5e7eb; }
 .timer.active { background: #ffffff; color: #111827; border-color: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
 
@@ -68,11 +68,11 @@ body {
 
 /* --- BUTTONS --- */
 .action-buttons { display: flex; gap: 8px; width: 100%; max-width: 550px; margin-top: 15px; }
-.btn-outline { flex: 1; padding: 10px; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Inter'; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.2s; }
+.btn-outline { flex: 1; padding: 10px; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Inter'; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .btn-outline:hover { background: #f3f4f6; border-color: #9ca3af; }
 .btn-danger-outline { color: #ef4444; border-color: #fca5a5; }
 .btn-danger-outline:hover { background: #fef2f2; border-color: #ef4444; }
-.btn-primary { flex: 1; padding: 10px; background: #10b981; border: none; border-radius: 6px; font-family: 'Inter'; font-weight: 600; color: #ffffff; cursor: pointer; transition: background 0.2s; }
+.btn-primary { flex: 1; padding: 10px; background: #10b981; border: none; border-radius: 6px; font-family: 'Inter'; font-weight: 600; color: #ffffff; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .btn-primary:hover { background: #059669; }
 
 /* --- SETTINGS MODAL --- */
@@ -284,7 +284,8 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
     width: 70px; height: 70px;
     background: linear-gradient(135deg, #10b981, #059669);
     border-radius: 18px; display: flex; align-items: center; justify-content: center;
-    font-size: 34px; box-shadow: 0 4px 14px rgba(16,185,129,0.3); flex-shrink: 0;
+    font-size: 28px; box-shadow: 0 4px 14px rgba(16,185,129,0.3); flex-shrink: 0;
+    color: #fff;
 }
 .home-profile-info { flex: 1; }
 .home-username { font-size: 26px; font-weight: 800; color: #111827; line-height: 1.1; }
@@ -294,6 +295,7 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
     border-radius: 8px; white-space: nowrap; cursor: pointer;
     background: #10b981; color: #fff; border: none;
     font-family: 'Inter', sans-serif; transition: background 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
 }
 .home-play-btn:hover { background: #059669; }
 
@@ -305,7 +307,7 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
     gap: 4px; transition: box-shadow 0.2s;
 }
 .home-stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.07); }
-.stat-icon { font-size: 22px; margin-bottom: 2px; }
+.stat-icon { font-size: 22px; margin-bottom: 2px; display: flex; align-items: center; justify-content: center; }
 .stat-value { font-size: 30px; font-weight: 800; color: #111827; line-height: 1; }
 .stat-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.4px; }
 .home-stat-card.win    .stat-value { color: #10b981; }
@@ -377,7 +379,7 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
 }
 .achievement-card.locked   { opacity: 0.38; filter: grayscale(1); }
 .achievement-card.unlocked { border-color: #10b981; background: #f0fdf9; }
-.ach-icon { font-size: 20px; flex-shrink: 0; }
+.ach-icon { font-size: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .ach-info { flex: 1; min-width: 0; }
 .ach-name { font-size: 12px; font-weight: 700; color: #111827; }
 .ach-desc { font-size: 11px; color: #6b7280; margin-top: 1px; }
@@ -770,7 +772,7 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
     display: flex; flex-direction: column; overflow: hidden;
 }
 .pgn-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 0 24px; }
-.pgn-modal-header h2 { margin: 0; font-size: 18px; font-weight: 800; color: #111827; }
+.pgn-modal-header h2 { margin: 0; font-size: 18px; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 8px; }
 .pgn-close-btn {
     background: none; border: none; font-size: 22px; color: #9ca3af;
     cursor: pointer; line-height: 1; padding: 0 4px; transition: color 0.15s;
@@ -784,6 +786,7 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
     font-weight: 600; color: #6b7280; background: none; border: none;
     border-bottom: 2px solid transparent; cursor: pointer;
     transition: all 0.15s; margin-bottom: -1px;
+    display: inline-flex; align-items: center; gap: 6px;
 }
 .pgn-tab:hover { color: #374151; }
 .pgn-tab.active { color: #10b981; border-bottom-color: #10b981; }
@@ -808,7 +811,7 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
     transition: all 0.2s; user-select: none;
 }
 .pgn-dropzone:hover, .pgn-dropzone.dragover { border-color: #10b981; background: #f0fdf9; }
-.pgn-drop-icon { font-size: 40px; margin-bottom: 10px; }
+.pgn-drop-icon { font-size: 40px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #9ca3af; }
 .pgn-drop-title { font-size: 15px; font-weight: 700; color: #374151; margin-bottom: 4px; }
 .pgn-drop-sub   { font-size: 13px; color: #9ca3af; }
 .pgn-filename { margin-top: 12px; font-size: 13px; font-weight: 600; color: #10b981; min-height: 20px; }
@@ -836,7 +839,7 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
     background: #fff; border-radius: 16px; padding: 32px 28px 24px 28px;
     width: 340px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); text-align: center;
 }
-.perspective-content h2 { margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #111827; }
+.perspective-content h2 { margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #111827; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .perspective-subtitle { font-size: 13px; color: #9ca3af; margin: 0 0 24px 0; }
 .perspective-options { display: flex; gap: 12px; justify-content: center; margin-bottom: 14px; }
 .perspective-btn {
@@ -847,7 +850,7 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
 }
 .perspective-btn:hover { border-color: #10b981; background: #f0fdf9; }
 .perspective-btn.selected { border-color: #10b981; background: #ecfdf5; }
-.persp-piece { font-size: 28px; line-height: 1; }
+.persp-piece { font-size: 28px; line-height: 1; display: flex; align-items: center; justify-content: center; }
 .persp-label { font-size: 12px; font-weight: 700; color: #374151; }
 
 
@@ -877,12 +880,6 @@ select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-fami
     background: #e5e7eb;
     transform: scale(1.1);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* Make desktop sidebars flex column so the toggle sticks to bottom */
-.left-nav, .home-left-nav, .puzzle-left-nav, .analysis-left-nav {
-    display: flex;
-    flex-direction: column;
 }
 
 /* ============================================================
@@ -935,7 +932,7 @@ body.dark #analysisBoard,
 body.dark #puzzleBoard { border-color: #2a2d35; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
 body.dark .player-info { color: #d1d5db; }
-body.dark .avatar { background: #1f2128; border-color: #2a2d35; }
+body.dark .avatar { background: #1f2128; border-color: #2a2d35; color: #9ca3af; }
 body.dark .timer { background: #1f2128; color: #9ca3af; border-color: #2a2d35; }
 body.dark .timer.active { background: #0d2e23; color: #34d399; border-color: #10b981; box-shadow: 0 0 0 2px rgba(16,185,129,0.25); }
 
@@ -1093,7 +1090,7 @@ body.dark .mobile-panel-close { color: #6b7280; }
 body.dark .mobile-panel-close:hover { color: #e5e7eb; }
 
 /* ── Theme Toggle in Dark Mode ────────────────────────────── */
-body.dark .theme-toggle-btn { background: #1f2128; border-color: #2a2d35; }
+body.dark .theme-toggle-btn { background: #1f2128; border-color: #2a2d35; color: #d1d5db; }
 body.dark .theme-toggle-btn:hover { background: #2a2d35; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 
 /* ── Smooth transition for everything ─────────────────────── */
@@ -1137,6 +1134,9 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn {
     font-size: 17px;
     font-weight: 800;
     color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .mobile-topbar-spacer { flex: 1; }
@@ -1342,7 +1342,7 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn {
         text-align: center;
         gap: 12px;
     }
-    .home-avatar { width: 56px; height: 56px; font-size: 28px; border-radius: 14px; }
+    .home-avatar { width: 56px; height: 56px; font-size: 24px; border-radius: 14px; }
     .home-username { font-size: 22px; }
     .home-play-btn { width: 100%; }
 
@@ -1448,7 +1448,7 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn {
     #gameStatus { font-size: 16px; margin-bottom: 2px; }
 
     .player-info span { font-size: 12px; }
-    .avatar { width: 28px; height: 28px; font-size: 15px; }
+    .avatar { width: 28px; height: 28px; font-size: 9px; }
     .timer { font-size: 14px; padding: 4px 8px; }
 
     #evalBar, #analysisEvalBar, #puzzleEvalBar { width: 10px; }
@@ -1494,4 +1494,83 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn {
     /* Disable hover effects on touch */
     .nav-links li:hover { background: transparent; }
     .nav-links li.active:hover { background-color: #ecfdf5; }
+}
+
+/* ============================================================
+   PHOSPHOR ICON & AVATAR OVERRIDES
+   ============================================================ */
+.ph {
+    font-size: 1.15em;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+/* Nav link icons */
+.nav-links li .ph {
+    font-size: 1.25em;
+}
+
+/* Stat card icons */
+.stat-icon .ph {
+    font-size: 22px;
+}
+
+/* Achievement icons */
+.ach-icon .ph {
+    font-size: 20px;
+}
+
+/* Avatar text styling */
+.avatar {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    color: #6b7280;
+}
+
+/* Home profile avatar (larger) */
+.home-avatar .ph {
+    font-size: 28px;
+}
+
+/* Mobile logo icon */
+.mobile-logo .ph {
+    font-size: 1.1em;
+}
+
+/* Button icon gaps */
+.btn-outline .ph,
+.btn-primary .ph {
+    font-size: 1.1em;
+}
+
+/* PGN modal header icon */
+.pgn-modal-header h2 .ph {
+    font-size: 1.1em;
+}
+
+/* Perspective piece icons */
+.persp-piece .ph {
+    font-size: 28px;
+}
+
+/* PGN dropzone icon */
+.pgn-drop-icon .ph {
+    font-size: 40px;
+    color: #9ca3af;
+}
+
+body.dark .pgn-drop-icon .ph {
+    color: #6b7280;
+}
+
+/* Dark mode avatars */
+body.dark .avatar {
+    color: #9ca3af;
+    background: #1f2128;
+    border-color: #2a2d35;
+}
+
+body.dark .home-avatar {
+    color: #fff;
 }
