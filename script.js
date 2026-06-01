@@ -373,6 +373,131 @@ function onDrop(source, target) {
 
 function onSnapEnd() { if (pendingPromotionMove === null) board.position(game.fen()); }
 
+// ── CLICK-TO-MOVE ────────────────────────────────────────────
+var clickSelected = null;  // currently selected square, or null
+
+function isPlayerTurn() {
+    if (game.game_over()) return false;
+    if (gameMode === 'pvp') return true;
+    return game.turn() !== aiColor;
+}
+
+function highlightSelected(square) {
+    $('#myBoard .square-55d63').removeClass('selected-square');
+    if (square) $('#myBoard .square-' + square).addClass('selected-square');
+}
+
+function showClickMoves(square) {
+    removeHighlights();
+    var moves = game.moves({ square: square, verbose: true });
+    for (var i = 0; i < moves.length; i++) {
+        if (moves[i].flags.indexOf('c') !== -1 || moves[i].flags.indexOf('e') !== -1) {
+            $('#myBoard .square-' + moves[i].to).addClass('possible-capture');
+        } else {
+            $('#myBoard .square-' + moves[i].to).addClass('possible-move');
+        }
+    }
+    return moves.length > 0;
+}
+
+function executeClickMove(from, to) {
+    var piece = game.get(from);
+    // Promotion
+    if (piece && piece.type === 'p' && (to.charAt(1) === '8' || to.charAt(1) === '1')) {
+        pendingPromotionMove = { source: from, target: to };
+        $('.promo-piece').each(function() {
+            $(this).attr('src', 'https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/' + piece.color + $(this).data('piece').toUpperCase() + '.png');
+        });
+        $('#promotionMenu').css('display', 'flex');
+        return;
+    }
+    var move = game.move({ from: from, to: to, promotion: 'q' });
+    if (!move) return;
+    board.position(game.fen());
+    highlightLastMove(move.from, move.to);
+    playMoveSound(move);
+    if (!gameStarted) { gameStarted = true; if (gameMode === 'pvp') startTimer(); }
+    updateTimerUI(); updateHistoryUI(); updateCapturedPieces(); updateStatus();
+    if (gameMode === 'pve') window.setTimeout(makeComputerMove, 250);
+}
+
+// Attach click handler — must handle clicks on both the square div AND the piece img inside it
+$(document).on('click', '#myBoard', function(e) {
+    if (!isPlayerTurn()) return;
+    if ($('#promotionMenu').css('display') !== 'none') return;
+
+    // Walk up from the clicked element to find the square div
+    var $sq = $(e.target).closest('.square-55d63');
+    if (!$sq.length) return;
+
+    // Extract square name from class list e.g. "square-e4"
+    var cls = $sq.attr('class') || '';
+    var m = cls.match(/square-([a-h][1-8])/);
+    if (!m) return;
+    var square = m[1];
+
+    var piece = game.get(square);
+
+    // ── Case 1: nothing selected yet ──────────────────────────
+    if (!clickSelected) {
+        if (!piece) return;                              // empty square
+        if (piece.color !== game.turn()) return;         // opponent piece
+        if (gameMode === 'pve' && piece.color === aiColor) return;
+        var hasMoves = showClickMoves(square);
+        if (!hasMoves) return;
+        clickSelected = square;
+        highlightSelected(square);
+        return;
+    }
+
+    // ── Case 2: piece already selected ────────────────────────
+    // Same square → deselect
+    if (square === clickSelected) {
+        clickSelected = null;
+        highlightSelected(null);
+        removeHighlights();
+        return;
+    }
+
+    // Another own piece → switch selection
+    if (piece && piece.color === game.turn() && !(gameMode === 'pve' && piece.color === aiColor)) {
+        clickSelected = null;
+        highlightSelected(null);
+        removeHighlights();
+        var hasMoves2 = showClickMoves(square);
+        if (hasMoves2) {
+            clickSelected = square;
+            highlightSelected(square);
+        }
+        return;
+    }
+
+    // Check legality
+    var legalMoves = game.moves({ square: clickSelected, verbose: true });
+    var isLegal = legalMoves.some(function(mv) { return mv.to === square; });
+    if (!isLegal) {
+        clickSelected = null;
+        highlightSelected(null);
+        removeHighlights();
+        return;
+    }
+
+    // Execute move
+    var from = clickSelected;
+    clickSelected = null;
+    highlightSelected(null);
+    removeHighlights();
+    executeClickMove(from, square);
+});
+
+// Clear click selection when drag starts (so both modes don't conflict)
+var _origOnDragStart = onDragStart;
+onDragStart = function(source, piece) {
+    clickSelected = null;
+    highlightSelected(null);
+    return _origOnDragStart(source, piece);
+};
+
 $('.promo-piece').on('click', function() {
     $('#promotionMenu').css('display', 'none');
     if (pendingPromotionMove) {
@@ -401,8 +526,8 @@ $('#saveSettingsBtn').on('click', function() {
     
     config.pieceTheme = 'https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/{piece}.png';
     board = Chessboard('myBoard', config);
-    $(window).resize(board.resize);
-    
+    $(window).on('resize orientationchange', function() { board.resize(); });
+    setTimeout(function() { board.resize(); }, 80);
     restartGame(); 
     $('#settingsModal').css('display', 'none');
 });
