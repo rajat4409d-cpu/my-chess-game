@@ -421,16 +421,40 @@ function executeClickMove(from, to) {
     if (gameMode === 'pve') window.setTimeout(makeComputerMove, 250);
 }
 
-// Attach click handler — must handle clicks on both the square div AND the piece img inside it
+// ── UNIFIED CLICK/TOUCH HANDLER ──────────────────────────────
+// Works on both desktop (click) and mobile (touchend)
+// touchend fires reliably without triggering browser image-save popup
+
+var _touchMoved = false;
+
+// Track if finger moved (to distinguish tap from scroll/drag)
+document.getElementById('myBoard').addEventListener('touchstart', function(e) {
+    _touchMoved = false;
+}, { passive: true });
+
+document.getElementById('myBoard').addEventListener('touchmove', function(e) {
+    _touchMoved = true;
+}, { passive: true });
+
+document.getElementById('myBoard').addEventListener('touchend', function(e) {
+    if (_touchMoved) return; // was a scroll, not a tap
+    e.preventDefault(); // prevent the click event firing after touchend
+    handleBoardInteraction(e.changedTouches[0].target);
+}, { passive: false });
+
+// Desktop click (only fires on non-touch devices since touchend calls preventDefault)
 $(document).on('click', '#myBoard', function(e) {
+    handleBoardInteraction(e.target);
+});
+
+function handleBoardInteraction(target) {
     if (!isPlayerTurn()) return;
     if ($('#promotionMenu').css('display') !== 'none') return;
 
-    // Walk up from the clicked element to find the square div
-    var $sq = $(e.target).closest('.square-55d63');
+    // Find the square div from whatever element was touched/clicked
+    var $sq = $(target).closest('.square-55d63');
     if (!$sq.length) return;
 
-    // Extract square name from class list e.g. "square-e4"
     var cls = $sq.attr('class') || '';
     var m = cls.match(/square-([a-h][1-8])/);
     if (!m) return;
@@ -438,10 +462,10 @@ $(document).on('click', '#myBoard', function(e) {
 
     var piece = game.get(square);
 
-    // ── Case 1: nothing selected yet ──────────────────────────
+    // ── Case 1: nothing selected ───────────────────────────────
     if (!clickSelected) {
-        if (!piece) return;                              // empty square
-        if (piece.color !== game.turn()) return;         // opponent piece
+        if (!piece) return;
+        if (piece.color !== game.turn()) return;
         if (gameMode === 'pve' && piece.color === aiColor) return;
         var hasMoves = showClickMoves(square);
         if (!hasMoves) return;
@@ -451,7 +475,6 @@ $(document).on('click', '#myBoard', function(e) {
     }
 
     // ── Case 2: piece already selected ────────────────────────
-    // Same square → deselect
     if (square === clickSelected) {
         clickSelected = null;
         highlightSelected(null);
@@ -459,7 +482,7 @@ $(document).on('click', '#myBoard', function(e) {
         return;
     }
 
-    // Another own piece → switch selection
+    // Tapped another own piece → switch selection
     if (piece && piece.color === game.turn() && !(gameMode === 'pve' && piece.color === aiColor)) {
         clickSelected = null;
         highlightSelected(null);
@@ -472,7 +495,7 @@ $(document).on('click', '#myBoard', function(e) {
         return;
     }
 
-    // Check legality
+    // Check legality and execute
     var legalMoves = game.moves({ square: clickSelected, verbose: true });
     var isLegal = legalMoves.some(function(mv) { return mv.to === square; });
     if (!isLegal) {
@@ -482,12 +505,17 @@ $(document).on('click', '#myBoard', function(e) {
         return;
     }
 
-    // Execute move
     var from = clickSelected;
     clickSelected = null;
     highlightSelected(null);
     removeHighlights();
     executeClickMove(from, square);
+}
+
+// Suppress long-press context menu on board (stops image-save popup on mobile)
+document.getElementById('myBoard').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
 });
 
 // Clear click selection when drag starts (so both modes don't conflict)
@@ -526,8 +554,8 @@ $('#saveSettingsBtn').on('click', function() {
     
     config.pieceTheme = 'https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/{piece}.png';
     board = Chessboard('myBoard', config);
-    $(window).on('resize orientationchange', function() { board.resize(); });
-    setTimeout(function() { board.resize(); }, 80);
+    $(window).resize(board.resize);
+    
     restartGame(); 
     $('#settingsModal').css('display', 'none');
 });
