@@ -22,6 +22,7 @@
         </button>
         <div class="mobile-logo"><i class="ph ph-crown"></i> ChessEngine</div>
         <div class="mobile-topbar-spacer"></div>
+        <button class="sound-toggle-btn" id="mobileSoundToggle" title="Toggle Sound"><i class="ph ph-speaker-high"></i></button>
         <button class="theme-toggle-btn" id="mobileThemeToggle" title="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
     </div>
 
@@ -60,8 +61,26 @@
             <div id="gameStatus">White to move</div>
             <div id="openingTracker">Standard Starting Position</div>
 
+            <!-- Opening Explorer Popup -->
+            <div id="openingPopup">
+                <div class="op-header">
+                    <span class="op-eco"></span>
+                    <span class="op-name"></span>
+                </div>
+                <div class="op-desc"></div>
+                <div class="op-moves-label">Moves</div>
+                <div class="op-moves"></div>
+            </div>
+
             <div class="board-profile opponent-profile">
-                <div class="player-info"><div class="avatar">AI</div><span>Stockfish AI (Level 20)</span></div>
+                <div class="player-info">
+                    <div class="avatar">AI</div>
+                    <span>Stockfish AI (Level 20)</span>
+                    <div class="thinking-loader" id="aiThinkingLoader" style="display: none;">
+                        <span class="thinking-dot"></span>
+                        <span>thinking...</span>
+                    </div>
+                </div>
                 <div id="timerBlack" class="timer">10:00</div>
             </div>
             
@@ -96,7 +115,9 @@
                 <button id="drawBtn" class="btn-outline" title="Offer a Draw"><i class="ph ph-handshake"></i> Draw</button>
                 <button id="resignBtn" class="btn-outline btn-danger-outline" title="Resign Game"><i class="ph ph-flag"></i> Resign</button>
                 <button id="downloadPgnBtn" class="btn-outline" title="Download Match"><i class="ph ph-download"></i> PGN</button>
+                <button id="copyPgnBtn" class="btn-outline" title="Copy PGN to Clipboard"><i class="ph ph-copy"></i> Copy</button>
                 <button id="resetBtn" class="btn-outline" title="Restart Game"><i class="ph ph-arrow-counter-clockwise"></i> Restart</button>
+                <button id="soundToggleBtn" class="btn-outline" title="Toggle Sound"><i class="ph ph-speaker-high"></i></button>
                 <button id="settingsBtn" class="btn-outline" title="Settings"><i class="ph ph-gear"></i></button>
                 <button id="showPanelBtn" class="btn-outline mobile-only-btn" title="Match Data"><i class="ph ph-list"></i></button>
             </div>
@@ -461,6 +482,22 @@
         </div>
     </div>
 
+    <!-- GAME RESULT MODAL -->
+    <div id="resultModal" class="result-modal">
+        <div class="result-modal-content">
+            <div class="result-icon-container" id="resultIcon">
+                <i class="ph ph-trophy"></i>
+            </div>
+            <h2 id="resultTitle">Victory!</h2>
+            <p id="resultDetail">Checkmate! You won in 34 moves.</p>
+            <div class="result-buttons">
+                <button id="resultAnalyzeBtn" class="btn-primary"><i class="ph ph-chart-bar"></i> Analyze Game</button>
+                <button id="resultRestartBtn" class="btn-outline"><i class="ph ph-arrow-counter-clockwise"></i> Play Again</button>
+                <button id="resultCloseBtn" class="btn-outline">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a050e0c1e88ab7e9',t:'MTc4MDM0NDc5Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

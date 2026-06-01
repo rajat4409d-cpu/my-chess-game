@@ -42,6 +42,9 @@ engine.onmessage = function(event) {
     }
 
     if (line.indexOf('bestmove') > -1) {
+        // Hide AI thinking indicator
+        $('#aiThinkingLoader').hide();
+
         var match = line.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbn])?/);
         if (match) {
             var move = game.move({ from: match[1], to: match[2], promotion: match[3] ? match[3] : 'q' });
@@ -62,6 +65,10 @@ engine.postMessage('uci');
 
 function makeComputerMove() {
     if (!game.game_over() && game.turn() === aiColor) {
+        // Show AI thinking indicator
+        $('#aiThinkingLoader').css('display', 'inline-flex');
+        $('#gameStatus').text('Stockfish is thinking...');
+
         var actualSkill = (engineSkill === 1) ? 0 : engineSkill;
         engine.postMessage('setoption name Skill Level value ' + actualSkill);
         engine.postMessage('position fen ' + game.fen());
@@ -72,25 +79,85 @@ function makeComputerMove() {
 
 // --- OPENING TRACKER LOGIC ---
 var openingBook = {
-    "e4,e5,Nf3,Nc6,Bc4": "Italian Game", "d4,d5,c4,Bf5": "Baltic Defense", "e4,c5": "Sicilian Defense",
-    "e4,e6": "French Defense", "e4,c6": "Caro-Kann Defense", "d4,d5,c4,e6": "Queen's Gambit Declined",
-    "d4,d5,c4,dxc4": "Queen's Gambit Accepted", "e4,e5,Nf3,Nc6,Bb5": "Ruy Lopez",
-    "d4,Nf6,c4,g6": "King's Indian Defense", "e4,e5,Nf3,Nf6": "Petrov's Defense"
+    // Key: comma-separated SAN moves prefix  →  { name, eco, desc }
+    "e4,e5,Nf3,Nc6,Bc4":          { name: "Italian Game",            eco: "C50", desc: "White targets f7 with the bishop on c4. One of the oldest openings, leading to rich tactical play." },
+    "e4,e5,Nf3,Nc6,Bc4,Bc5":      { name: "Giuoco Piano",            eco: "C54", desc: "The 'Quiet Game'. Both sides develop naturally before the tension breaks in the centre." },
+    "e4,e5,Nf3,Nc6,Bc4,Nf6":      { name: "Two Knights Defense",     eco: "C55", desc: "Black immediately counter-attacks with Nf6, inviting sharp tactical complications." },
+    "e4,e5,Nf3,Nc6,Bb5":          { name: "Ruy Lopez",               eco: "C60", desc: "One of the most popular openings. White pressures the knight that defends e5, seeking long-term positional advantage." },
+    "e4,e5,Nf3,Nc6,Bb5,a6":       { name: "Ruy Lopez (Morphy)",      eco: "C65", desc: "The Morphy Defense. Black chases the bishop immediately, the most popular response to the Ruy Lopez." },
+    "e4,e5,Nf3,Nf6":              { name: "Petrov's Defense",         eco: "C42", desc: "The Russian Defense. Black mirrors White's knight move, leading to a solid but passive structure." },
+    "e4,e5,f4":                   { name: "King's Gambit",            eco: "C30", desc: "An aggressive romantic-era gambit. White sacrifices a pawn for rapid development and a strong centre." },
+    "e4,e5,Nc3":                  { name: "Vienna Game",              eco: "C25", desc: "A flexible alternative to 2.Nf3. White supports a future f4 advance and keeps options open." },
+    "e4,c5":                      { name: "Sicilian Defense",         eco: "B20", desc: "The most popular response to 1.e4. Black fights for the centre asymmetrically, leading to unbalanced, fighting positions." },
+    "e4,c5,Nf3,d6,d4,cxd4,Nxd4,Nf6,Nc3,g6": { name: "Sicilian Dragon",    eco: "B70", desc: "One of the sharpest openings. Black fianchettoes the bishop on g7 while both sides launch ferocious attacks." },
+    "e4,c5,Nf3,e6,d4,cxd4,Nxd4,Nc6": { name: "Sicilian Taimanov",   eco: "B46", desc: "A flexible Sicilian where Black keeps options open for the bishop before committing it." },
+    "e4,e6":                      { name: "French Defense",           eco: "C00", desc: "A solid, strategic defense. Black accepts a cramped position in exchange for a solid pawn structure." },
+    "e4,c6":                      { name: "Caro-Kann Defense",        eco: "B10", desc: "A solid alternative to the Sicilian. Black plays c6 to support d5, aiming for a sound pawn structure." },
+    "e4,d5":                      { name: "Scandinavian Defense",     eco: "B01", desc: "Black immediately challenges the centre with d5. After exd5, Black recaptures or plays Nf6." },
+    "e4,g6":                      { name: "Modern Defense",           eco: "B06", desc: "A hypermodern approach. Black allows White to build a broad centre and then undermines it." },
+    "e4,d6":                      { name: "Pirc Defense",             eco: "B07", desc: "Similar to the Modern. Black develops flexibly and counterattacks White's centre later." },
+    "d4,d5,c4":                   { name: "Queen's Gambit",           eco: "D06", desc: "One of the oldest and most respected openings. White offers a pawn to gain centre control." },
+    "d4,d5,c4,e6":                { name: "Queen's Gambit Declined",  eco: "D30", desc: "Black declines the gambit and stakes out a solid position in the centre." },
+    "d4,d5,c4,dxc4":              { name: "Queen's Gambit Accepted",  eco: "D20", desc: "Black accepts the pawn, allowing White a strong centre. Black aims to equalise with timely pawn breaks." },
+    "d4,d5,c4,c6":                { name: "Slav Defense",             eco: "D10", desc: "Black supports d5 with c6, keeping the c8 bishop's diagonal open. Very solid and popular." },
+    "d4,d5,c4,Bf5":               { name: "Baltic Defense",           eco: "D02", desc: "An unusual but tricky sideline. Black develops the bishop before it gets locked in." },
+    "d4,Nf6,c4,g6":               { name: "King's Indian Defense",    eco: "E60", desc: "A dynamic and aggressive defense. Black allows White a large centre and then counterattacks fiercely." },
+    "d4,Nf6,c4,e6,Nc3,Bb4":       { name: "Nimzo-Indian Defense",    eco: "E20", desc: "Black pins White's knight and fights for central control. One of the most respected defenses." },
+    "d4,Nf6,c4,b6":               { name: "Queen's Indian Defense",   eco: "E12", desc: "Black fianchettoes the queen's bishop to control the long diagonal and fight for e4." },
+    "d4,Nf6,c4,c5,d5":            { name: "Benoni Defense",           eco: "A60", desc: "Black accepts a positional weakness for dynamic counterplay and active piece play on the kingside." },
+    "d4,f5":                      { name: "Dutch Defense",            eco: "A80", desc: "Black plays f5 to control e4 and build an aggressive kingside setup." },
+    "Nf3,d5,d4":                  { name: "London System",            eco: "D02", desc: "A solid, low-theory system for White. The bishop develops to f4, creating a sturdy setup." },
+    "e4,e5,Nf3,Nc6,d4":           { name: "Scotch Game",              eco: "C44", desc: "White opens the centre immediately on move 3. Leads to open, dynamic positions." },
+    "e4,e5,Nf3,Nc6,d4,exd4,Nxd4,Nf6,Nxc6": { name: "Scotch Four Knights", eco: "C47", desc: "A branch of the Scotch leading to roughly symmetrical but tactically rich positions." }
 };
 
 function checkOpening() {
     var historyStr = game.history().join(',');
-    var currentOpening = "";
+    var currentOpening = null;
+    var currentKey = '';
     var openingKeys = Object.keys(openingBook).sort(function(a, b) { return b.length - a.length; });
     for (var i = 0; i < openingKeys.length; i++) {
-        if (historyStr.startsWith(openingKeys[i])) { currentOpening = openingBook[openingKeys[i]]; break; }
+        if (historyStr.startsWith(openingKeys[i])) {
+            currentKey = openingKeys[i];
+            currentOpening = openingBook[openingKeys[i]];
+            break;
+        }
     }
-    if (currentOpening !== "") {
-        $('#openingTracker').text(currentOpening).fadeIn(300);
-    } else if (game.history().length > 10) {
+    if (currentOpening) {
+        $('#openingTracker')
+            .text(currentOpening.eco + ' · ' + currentOpening.name)
+            .attr('data-opening-key', currentKey)
+            .fadeIn(300);
+    } else if (game.history().length > 12) {
         $('#openingTracker').fadeOut(300);
+        $('#openingPopup').fadeOut(150);
     }
 }
+
+// --- OPENING POPUP ---
+$(document).on('click', '#openingTracker', function(e) {
+    e.stopPropagation();
+    var popup = $('#openingPopup');
+    if (popup.is(':visible')) { popup.fadeOut(150); return; }
+    var key = $(this).attr('data-opening-key');
+    var opening = key ? openingBook[key] : null;
+    if (!opening) return;
+    // Build a readable move sequence preview (up to 6 half-moves)
+    var moves = key.split(',').slice(0, 8);
+    var movesStr = '';
+    for (var i = 0; i < moves.length; i++) {
+        if (i % 2 === 0) movesStr += (i / 2 + 1) + '. ';
+        movesStr += moves[i] + ' ';
+    }
+    if (key.split(',').length > 8) movesStr += '…';
+    popup.find('.op-name').text(opening.name);
+    popup.find('.op-eco').text(opening.eco);
+    popup.find('.op-desc').text(opening.desc);
+    popup.find('.op-moves').text(movesStr.trim());
+    popup.fadeIn(180);
+});
+$(document).on('click', '#openingPopup', function(e) { e.stopPropagation(); });
+$(document).on('click', function() { $('#openingPopup').fadeOut(150); });
 
 // --- CORE UI LOGIC ---
 function formatTime(seconds) { var m = Math.floor(seconds / 60); var s = seconds % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
@@ -99,6 +166,19 @@ function updateTimerUI() {
     $('#timerWhite').text(formatTime(timeWhite)); $('#timerBlack').text(formatTime(timeBlack));
     if (game.turn() === 'w') { $('#timerWhite').addClass('active'); $('#timerBlack').removeClass('active'); } 
     else { $('#timerBlack').addClass('active'); $('#timerWhite').removeClass('active'); }
+
+    // Timer Warning < 30s
+    if (timeWhite < 30) {
+        $('#timerWhite').addClass('timer-warning');
+    } else {
+        $('#timerWhite').removeClass('timer-warning');
+    }
+    
+    if (timeBlack < 30) {
+        $('#timerBlack').addClass('timer-warning');
+    } else {
+        $('#timerBlack').removeClass('timer-warning');
+    }
 }
 
 function startTimer() {
@@ -114,10 +194,19 @@ function startTimer() {
 function timeOutWin(winner) {
     clearInterval(timerInterval);
     $status.text('Time out! ' + winner + ' wins!');
-    endSound.play();
+    if (!isSoundMuted) endSound.play();
     var playerColor = aiColor === 'b' ? 'White' : 'Black';
     var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish';
-    if (typeof recordGameResult !== 'undefined') recordGameResult(winner === playerColor ? 'win' : 'loss', game.history().length, opp, 'timeout');
+    var result = winner === playerColor ? 'win' : 'loss';
+    if (typeof recordGameResult !== 'undefined') recordGameResult(result, game.history().length, opp, 'timeout');
+
+    // Trigger Game Result Modal
+    var moves = Math.ceil(game.history().length / 2);
+    if (result === 'win') {
+        showGameResultModal('win', 'Victory!', 'Time out! You won in ' + moves + ' moves.');
+    } else {
+        showGameResultModal('loss', 'Defeat!', 'Time out! Stockfish won in ' + moves + ' moves.');
+    }
 }
 
 function updateHistoryUI() {
@@ -147,31 +236,104 @@ function updateCapturedPieces() {
     $('#capturedByWhite').html(wHTML); $('#capturedByBlack').html(bHTML);
 }
 
-function playMoveSound(move) { moveSound.currentTime=0; captureSound.currentTime=0; checkSound.currentTime=0; if (game.in_checkmate() || game.in_draw()) endSound.play(); else if (game.in_check()) checkSound.play(); else if (move.captured) captureSound.play(); else moveSound.play(); }
+// --- SOUND TOGGLE ---
+var isSoundMuted = false;
+
+function applySoundState(muted) {
+    isSoundMuted = muted;
+    var icon = muted ? 'ph-speaker-slash' : 'ph-speaker-high';
+    var tip  = muted ? 'Unmute Sound' : 'Mute Sound';
+    $('#soundToggleBtn').html('<i class="ph ' + icon + '"></i>').attr('title', tip);
+    $('#mobileSoundToggle').html('<i class="ph ' + icon + '"></i>').attr('title', tip);
+    if (muted) {
+        $('#soundToggleBtn').addClass('sound-muted');
+        $('#mobileSoundToggle').addClass('sound-muted');
+    } else {
+        $('#soundToggleBtn').removeClass('sound-muted');
+        $('#mobileSoundToggle').removeClass('sound-muted');
+    }
+    try { localStorage.setItem('chess-sound-muted', muted ? '1' : '0'); } catch(e) {}
+}
+
+$(document).on('click', '#soundToggleBtn, #mobileSoundToggle', function() {
+    applySoundState(!isSoundMuted);
+});
+
+// Restore saved sound preference
+(function() {
+    var saved = null;
+    try { saved = localStorage.getItem('chess-sound-muted'); } catch(e) {}
+    if (saved === '1') applySoundState(true);
+})();
+
+function playMoveSound(move) {
+    if (isSoundMuted) return;
+    moveSound.currentTime=0; captureSound.currentTime=0; checkSound.currentTime=0;
+    if (game.in_checkmate() || game.in_draw()) endSound.play();
+    else if (game.in_check()) checkSound.play();
+    else if (move.captured) captureSound.play();
+    else moveSound.play();
+}
 
 function removeHighlights() { $('#myBoard .square-55d63').removeClass('possible-move possible-capture'); }
 
 function highlightLastMove(from, to) { $('#myBoard .square-55d63').removeClass('highlight-move'); if (from && to) { $('#myBoard .square-' + from).addClass('highlight-move'); $('#myBoard .square-' + to).addClass('highlight-move'); } }
 
+function highlightKingInCheck() {
+    // Remove any existing check highlight
+    $('#myBoard .square-55d63').removeClass('king-in-check');
+    if (!game.in_check()) return;
+    // Find the king of the side that is in check (the side to move)
+    var color = game.turn(); // 'w' or 'b'
+    var board = game.board();
+    for (var r = 0; r < 8; r++) {
+        for (var c = 0; c < 8; c++) {
+            var piece = board[r][c];
+            if (piece && piece.type === 'k' && piece.color === color) {
+                var file = String.fromCharCode(97 + c); // a-h
+                var rank = String(8 - r);               // 1-8
+                $('#myBoard .square-' + file + rank).addClass('king-in-check');
+                return;
+            }
+        }
+    }
+}
+
 function updateStatus() {
+    if (game.turn() !== aiColor || gameMode !== 'pve') {
+        $('#aiThinkingLoader').hide();
+    }
+
     if (game.in_checkmate()) {
         clearInterval(timerInterval);
         var winner = game.turn() === 'w' ? 'Black' : 'White';
         $status.text('Checkmate! ' + winner + ' wins!');
-        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
         var playerColor = aiColor === 'b' ? 'w' : 'b';
         var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish (' + (engineSkill===20?'GM':engineSkill===10?'Adv':'Beg') + ')';
         var playerWon = (game.turn() !== playerColor);
         if (typeof recordGameResult !== 'undefined') recordGameResult(playerWon ? 'win' : 'loss', game.history().length, opp, 'checkmate');
+
+        // Trigger Game Result Modal
+        var moves = Math.ceil(game.history().length / 2);
+        if (playerWon) {
+            showGameResultModal('win', 'Victory!', 'Checkmate! You won in ' + moves + ' moves.');
+        } else {
+            showGameResultModal('loss', 'Defeat!', 'Checkmate! Stockfish AI won in ' + moves + ' moves.');
+        }
     } else if (game.in_draw()) {
         clearInterval(timerInterval);
         $status.text('Game Over. It\'s a Draw!');
         var opp2 = gameMode === 'pvp' ? 'Player 2' : 'Stockfish';
         if (typeof recordGameResult !== 'undefined') recordGameResult('draw', game.history().length, opp2, 'draw');
+
+        // Trigger Game Result Modal
+        var moves = Math.ceil(game.history().length / 2);
+        showGameResultModal('draw', 'Draw Game', 'The match ended in a draw after ' + moves + ' moves.');
     } else {
         $status.text((game.turn() === 'w' ? 'White' : 'Black') + ' to move' + (game.in_check() ? ' (Check!)' : ''));
     }
     checkOpening();
+    highlightKingInCheck();
 }
 
 function onDragStart(source, piece) {
@@ -256,18 +418,26 @@ $('#resignBtn').on('click', function() {
     if (game.game_over() || !gameStarted) return;
     clearInterval(timerInterval); gameStarted = false;
     $status.text((game.turn() === 'w' ? 'White' : 'Black') + ' Resigned. ' + (game.turn() === 'w' ? 'Black' : 'White') + ' wins!');
-    endSound.play();
+    if (!isSoundMuted) endSound.play();
     var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish';
     if (typeof recordGameResult !== 'undefined') recordGameResult('resign', game.history().length, opp, 'resignation');
+
+    // Trigger Game Result Modal
+    var moves = Math.ceil(game.history().length / 2);
+    showGameResultModal('loss', 'Defeat', 'You resigned after ' + moves + ' moves.');
 });
 
 $('#drawBtn').on('click', function() {
     if (game.game_over() || !gameStarted) return;
     clearInterval(timerInterval); gameStarted = false;
     $status.text('Draw agreed.');
-    endSound.play();
+    if (!isSoundMuted) endSound.play();
     var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish';
     if (typeof recordGameResult !== 'undefined') recordGameResult('draw', game.history().length, opp, 'agreement');
+
+    // Trigger Game Result Modal
+    var moves = Math.ceil(game.history().length / 2);
+    showGameResultModal('draw', 'Draw Agreed', 'Draw agreed after ' + moves + ' moves.');
 });
 
 $('#resetBtn').on('click', restartGame);
@@ -284,28 +454,46 @@ $('#downloadPgnBtn').on('click', function() {
     document.body.removeChild(a); window.URL.revokeObjectURL(url);
 });
 
+$('#copyPgnBtn').on('click', function() {
+    if (game.history().length === 0) return;
+    var pgnData = game.pgn();
+    navigator.clipboard.writeText(pgnData).then(function() {
+        var $btn = $('#copyPgnBtn');
+        var originalHTML = $btn.html();
+        $btn.html('<i class="ph ph-check"></i> Copied!').addClass('copy-success');
+        setTimeout(function() {
+            $btn.html(originalHTML).removeClass('copy-success');
+        }, 1800);
+    }).catch(function(err) {
+        console.error('Could not copy PGN: ', err);
+    });
+});
+
 function restartGame() { 
     game.reset(); board.start(); clearInterval(timerInterval); timeWhite = timeControl; timeBlack = timeControl; gameStarted = false; 
     aiColor = (board.orientation() === 'white') ? 'b' : 'w'; 
     
+    // Hide AI thinking indicator
+    $('#aiThinkingLoader').hide();
+
     engine.postMessage('ucinewgame');
     engine.postMessage('setoption name Clear Hash');
     
     if (gameMode === 'pvp') { 
-        $('.opponent-profile .player-info span').text('Player 2 (' + (aiColor === 'w' ? 'White' : 'Black') + ')'); 
+        $('.opponent-profile .player-info > span').text('Player 2 (' + (aiColor === 'w' ? 'White' : 'Black') + ')'); 
         $('.opponent-profile .avatar').text('P2');
-        $('.player-profile .player-info span').text('Player 1 (' + (aiColor === 'w' ? 'Black' : 'White') + ')'); 
+        $('.player-profile .player-info > span').text('Player 1 (' + (aiColor === 'w' ? 'Black' : 'White') + ')'); 
         $('.player-profile .avatar').text('P1');
         $('.timer').show();
     } else { 
         var diffText = (engineSkill === 20) ? 'Grandmaster' : (engineSkill === 10 ? 'Advanced' : 'Beginner');
-        $('.opponent-profile .player-info span').text('Stockfish AI (' + diffText + ')'); 
+        $('.opponent-profile .player-info > span').text('Stockfish AI (' + diffText + ')'); 
         $('.opponent-profile .avatar').text('AI');
-        $('.player-profile .player-info span').text('You (' + (aiColor === 'w' ? 'Black' : 'White') + ')'); 
+        $('.player-profile .player-info > span').text('You (' + (aiColor === 'w' ? 'Black' : 'White') + ')'); 
         $('.player-profile .avatar').text('YOU');
         $('.timer').hide();
     }
-    updateTimerUI(); $('#moveHistory').html(''); updateCapturedPieces(); highlightLastMove(null, null); updateStatus(); $('#openingTracker').hide(); $('#evalFill').css('height', '50%'); 
+    updateTimerUI(); $('#moveHistory').html(''); updateCapturedPieces(); highlightLastMove(null, null); $('#myBoard .square-55d63').removeClass('king-in-check'); updateStatus(); $('#openingTracker').hide(); $('#evalFill').css('height', '50%'); 
         
     if (gameMode === 'pve' && aiColor === 'w') window.setTimeout(makeComputerMove, 250); 
 }
@@ -490,8 +678,8 @@ function openAnalysis() {
     }
     $('#analyzeNavBtn').addClass('active');
     if (typeof sessionStats !== 'undefined') sessionStats.analyzed = (sessionStats.analyzed || 0) + 1;
-    var whiteLabel = $('.player-profile .player-info span').text() || 'White';
-    var blackLabel = $('.opponent-profile .player-info span').text() || 'Black';
+    var whiteLabel = $('.player-profile .player-info > span').text() || 'White';
+    var blackLabel = $('.opponent-profile .player-info > span').text() || 'Black';
     showPerspectivePicker(whiteLabel, blackLabel, function() {
         _buildAndRunAnalysis(null);
     });
@@ -1349,8 +1537,7 @@ function onPuzzleDrop(source, target) {
         puzzleBoard.position(puzzleGame.fen());
         highlightPuzzleSquare(source, target, 'wrong');
 
-        captureSound.currentTime = 0;
-        captureSound.play();
+        if (!isSoundMuted) { captureSound.currentTime = 0; captureSound.play(); }
 
         puzzleFailed();
         return 'snapback';
@@ -1370,8 +1557,7 @@ function makeOpponentPuzzleMove() {
     var move = puzzleGame.move({ from: from, to: to, promotion: promo });
     if (move) {
         puzzleBoard.position(puzzleGame.fen());
-        moveSound.currentTime = 0;
-        moveSound.play();
+        if (!isSoundMuted) { moveSound.currentTime = 0; moveSound.play(); }
         highlightPuzzleSquare(from, to, null);
         puzzleMoveIndex++;
         $('#puzzleStatus').text('Your turn! Find the best move...');
@@ -1402,8 +1588,7 @@ function puzzleSolved() {
     $('#puzzleStatus').text('Puzzle Solved! Excellent!');
     $('#puzzleEvalFill').css('height', puzzlePlayerColor === 'w' ? '85%' : '15%');
     
-    endSound.currentTime = 0;
-    endSound.play();
+    if (!isSoundMuted) { endSound.currentTime = 0; endSound.play(); }
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     
     showPuzzleSolution();
@@ -1745,3 +1930,37 @@ if (window.matchMedia) {
         }
     });
 }
+
+// --- GAME RESULT MODAL FUNCTIONS ---
+function showGameResultModal(outcome, title, detail) {
+    $('#resultTitle').text(title);
+    $('#resultDetail').text(detail);
+    
+    $('#resultIcon').removeClass('win loss draw').addClass(outcome);
+    var iconHTML = '';
+    if (outcome === 'win') {
+        iconHTML = '<i class="ph ph-trophy"></i>';
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+    } else if (outcome === 'loss') {
+        iconHTML = '<i class="ph ph-skull"></i>';
+    } else {
+        iconHTML = '<i class="ph ph-handshake"></i>';
+    }
+    $('#resultIcon').html(iconHTML);
+    
+    $('#resultModal').addClass('open');
+}
+
+$('#resultAnalyzeBtn').on('click', function() {
+    $('#resultModal').removeClass('open');
+    openAnalysis();
+});
+
+$('#resultRestartBtn').on('click', function() {
+    $('#resultModal').removeClass('open');
+    restartGame();
+});
+
+$('#resultCloseBtn').on('click', function() {
+    $('#resultModal').removeClass('open');
+});
