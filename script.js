@@ -416,7 +416,7 @@ function drawBestMoveArrow(uci) {
 }
 
 // ---------- ANNOTATION BADGE ON BOARD ----------
-function drawAnnotationBadge(annotation, toSquare) {
+function drawAnnotationBadge(annotation, toSquare, annKey) {
     $('#analysisBadge').remove();
     if (!annotation || !toSquare) return;
     var $board    = $('#analysisBoard');
@@ -430,11 +430,12 @@ function drawAnnotationBadge(annotation, toSquare) {
     var x = col * sqSize + sqSize * 0.62;
     var y = row * sqSize + sqSize * 0.05;
 
-    var colors = {
-        '\u2605': '#0ea5e9', '\u2713': '#10b981',
-        '?!': '#f59e0b', '?': '#f97316', '??': '#ef4444'
+    var colorMap = {
+        'brilliant': '#0ea5e9', 'best': '#10b981', 'excellent': '#10b981',
+        'good': '#22c55e', 'book': '#8b5cf6', 'inaccuracy': '#f59e0b',
+        'mistake': '#f97316', 'blunder': '#ef4444'
     };
-    var color = colors[annotation] || '#888';
+    var color = colorMap[annKey] || '#888';
     var svgNS = 'http://www.w3.org/2000/svg';
     var svg = document.createElementNS(svgNS, 'svg');
     svg.id = 'analysisBadge';
@@ -570,8 +571,9 @@ function renderAnalysisPosition() {
     $('#evalBestMove').text(analysisBestSAN[analysisMoveIndex] ? 'Best: ' + analysisBestSAN[analysisMoveIndex] : 'Best: \u2014');
     setTimeout(function() { drawBestMoveArrow(bestUCI); }, 30);
     var ann   = moveIsForPerspective(analysisMoveIndex) ? analysisAnnotations[analysisMoveIndex] : '';
+    var annSym = ann ? getAnnSym(ann) : '';
     var toSq  = pos.to;
-    setTimeout(function() { drawAnnotationBadge(ann, toSq); }, 35);
+    setTimeout(function() { drawAnnotationBadge(annSym, toSq, ann); }, 35);
     if (analysisMoveIndex > 0) {
         var histStr = analysisHistory.slice(1, analysisMoveIndex + 1).map(function(h) { return h.san; }).join(',');
         var found = '';
@@ -594,18 +596,17 @@ function moveIsForPerspective(moveIdx) {
 }
 
 function renderAnalysisMoveList() {
-    var counts = { brilliant:0, best:0, inaccuracy:0, mistake:0, blunder:0 };
+    var counts = { brilliant:0, best:0, excellent:0, good:0, book:0, inaccuracy:0, mistake:0, blunder:0 };
     for (var i = 1; i < analysisHistory.length; i++) {
         if (!moveIsForPerspective(i)) continue;
         var a = analysisAnnotations[i];
-        if      (a === '\u2605') counts.brilliant++;
-        else if (a === '\u2713') counts.best++;
-        else if (a === '?!')    counts.inaccuracy++;
-        else if (a === '?')     counts.mistake++;
-        else if (a === '??')    counts.blunder++;
+        if (counts.hasOwnProperty(a)) counts[a]++;
     }
     $('#cntBrilliant').text(counts.brilliant);
     $('#cntBest').text(counts.best);
+    $('#cntExcellent').text(counts.excellent);
+    $('#cntGood').text(counts.good);
+    $('#cntBook').text(counts.book);
     $('#cntInaccuracy').text(counts.inaccuracy);
     $('#cntMistake').text(counts.mistake);
     $('#cntBlunder').text(counts.blunder);
@@ -621,8 +622,8 @@ function renderAnalysisMoveList() {
         var bAnn  = (bMove && moveIsForPerspective(i+1)) ? (analysisAnnotations[i+1] || '') : '';
         var wCls  = 'ana-move-cell' + (analysisMoveIndex === i ? ' active-cell' : '') + (moveIsForPerspective(i) ? '' : ' out-of-perspective');
         var bCls  = 'ana-move-cell' + (bMove && analysisMoveIndex === i+1 ? ' active-cell' : '') + (bMove && moveIsForPerspective(i+1) ? '' : ' out-of-perspective');
-        var wBadge = wAnn ? '<span class="move-annotation ' + getAnnClass(wAnn) + '">' + wAnn + '</span>' : '';
-        var bBadge = bAnn ? '<span class="move-annotation ' + getAnnClass(bAnn) + '">' + bAnn + '</span>' : '';
+        var wBadge = wAnn ? '<span class="move-annotation ' + getAnnClass(wAnn) + '">' + getAnnSym(wAnn) + '</span>' : '';
+        var bBadge = bAnn ? '<span class="move-annotation ' + getAnnClass(bAnn) + '">' + getAnnSym(bAnn) + '</span>' : '';
         html += '<div class="ana-history-row">';
         html += '<span class="ana-move-num">' + mn + '.</span>';
         html += '<span class="' + wCls + '" data-idx="' + i + '">' + wMove.san + wBadge + '</span>';
@@ -638,48 +639,111 @@ function renderAnalysisMoveList() {
     }
 }
 
-function getAnnClass(ann) {
-    if (ann === '\u2605') return 'ann-brilliant';
-    if (ann === '\u2713') return 'ann-best';
-    if (ann === '?!')     return 'ann-inaccuracy';
-    if (ann === '?')      return 'ann-mistake';
-    if (ann === '??')     return 'ann-blunder';
-    return '';
+// Maps annotation key → CSS class, display symbol, badge color
+var ANN_META = {
+    'brilliant':  { cls: 'ann-brilliant',  sym: '\u2605',  label: 'Brilliant' },
+    'best':       { cls: 'ann-best',       sym: '\u2713',  label: 'Best'      },
+    'excellent':  { cls: 'ann-excellent',  sym: '!',        label: 'Excellent' },
+    'good':       { cls: 'ann-good',       sym: '\u25a1',  label: 'Good'      },
+    'book':       { cls: 'ann-book',       sym: '\u2656',  label: 'Book'      },
+    'inaccuracy': { cls: 'ann-inaccuracy', sym: '?!',       label: 'Inaccuracy'},
+    'mistake':    { cls: 'ann-mistake',    sym: '?',        label: 'Mistake'   },
+    'blunder':    { cls: 'ann-blunder',    sym: '??',       label: 'Blunder'   },
+};
+
+function getAnnMeta(ann) {
+    return ANN_META[ann] || { cls: '', sym: ann, label: '' };
 }
+function getAnnClass(ann) { return getAnnMeta(ann).cls; }
+function getAnnSym(ann)   { return getAnnMeta(ann).sym; }
 
 // ---------- ANNOTATIONS ----------
+
+function capEval(v) {
+    if (v >=  9000) return  1000;
+    if (v <= -9000) return -1000;
+    return Math.max(-1000, Math.min(1000, v));
+}
+
+// Book moves: first 10 half-moves of well-known opening theory
+var BOOK_POSITIONS = (function() {
+    var book = {};
+    var lines = [
+        ['e2e4','e7e5'],['e2e4','c7c5'],['e2e4','e7e6'],['e2e4','c7c6'],
+        ['d2d4','d7d5'],['d2d4','g8f6'],['g1f3','d7d5'],['c2c4','e7e5'],
+        ['g1f3','g8f6'],['c2c4','c7c5']
+    ];
+    var Chess2 = typeof Chess !== 'undefined' ? Chess : null;
+    if (Chess2) {
+        lines.forEach(function(line) {
+            var g = new Chess2();
+            line.forEach(function(uci) {
+                g.move({ from: uci.slice(0,2), to: uci.slice(2,4), promotion: uci[4] || undefined });
+                book[g.fen().split(' ').slice(0,4).join(' ')] = true;
+            });
+        });
+    }
+    return book;
+})();
+
+function isBookMove(fenBefore, uci) {
+    // Check if this position+move is in our opening book
+    try {
+        var g = new Chess();
+        g.load(fenBefore);
+        g.move({ from: uci.slice(0,2), to: uci.slice(2,4), promotion: uci[4] || undefined });
+        var key = g.fen().split(' ').slice(0,4).join(' ');
+        return !!BOOK_POSITIONS[key];
+    } catch(e) { return false; }
+}
+
 function computeAnnotations() {
     for (var i = 1; i < analysisHistory.length; i++) {
         var eb = analysisEvals[i - 1];
         var ea = analysisEvals[i];
         if (eb === null || ea === null) continue;
-        var isWhiteMove = (i % 2 === 1);
-        function capEval(v) {
-            if (v >= 9000)  return 900;
-            if (v <= -9000) return -900;
-            return Math.max(-900, Math.min(900, v));
-        }
+
         var ebC = capEval(eb);
         var eaC = capEval(ea);
+
+        // evalDrop: centipawns the MOVER lost. Positive = bad move.
+        var isWhiteMove = (i % 2 === 1);
         var evalDrop = isWhiteMove ? (ebC - eaC) : (eaC - ebC);
+
         var playedUCI  = analysisHistory[i].uci;
         var bestUCI    = analysisBestUCI[i - 1];
-        var playedBest = (bestUCI && playedUCI && playedUCI === bestUCI);
-        var legalMoveCount = (function() {
-            try { var tmp = new Chess(); tmp.load(analysisHistory[i-1].fen); return tmp.moves().length; } catch(e) { return 99; }
-        })();
-        var positionIsDecided = (Math.abs(ebC) > 600);
-        if (playedBest && evalDrop <= 5 && legalMoveCount > 1 && !positionIsDecided) {
-            analysisAnnotations[i] = '\u2605';
-        } else if (evalDrop <= 20) {
-            analysisAnnotations[i] = '\u2713';
-        } else if (evalDrop <= 60) {
-            analysisAnnotations[i] = '?!';
-        } else if (evalDrop <= 200) {
-            analysisAnnotations[i] = '?';
-        } else {
-            analysisAnnotations[i] = '??';
+        var playedBest = !!(bestUCI && playedUCI && playedUCI === bestUCI);
+
+        // CRITICAL FIX: if you played the engine's top move, it can NEVER
+        // be rated worse than "Excellent" — eval noise cannot override this
+        if (playedBest) {
+            var positionIsDecided = (Math.abs(ebC) > 700);
+            var legalMoveCount = (function(idx) {
+                try { var tmp = new Chess(); tmp.load(analysisHistory[idx].fen); return tmp.moves().length; }
+                catch(e) { return 99; }
+            })(i - 1);
+
+            if (!positionIsDecided && legalMoveCount > 1 && evalDrop <= 0) {
+                analysisAnnotations[i] = 'brilliant'; // ★
+            } else {
+                analysisAnnotations[i] = 'best';      // ✓ best move played, always at least best
+            }
+            continue;
         }
+
+        // Book move check (only in first 10 half-moves)
+        if (i <= 10 && isBookMove(analysisHistory[i-1].fen, playedUCI)) {
+            analysisAnnotations[i] = 'book';
+            continue;
+        }
+
+        // Standard thresholds — Lichess-calibrated
+        if      (evalDrop <=   0) { analysisAnnotations[i] = 'best'; }        // ✓ essentially best
+        else if (evalDrop <=  10) { analysisAnnotations[i] = 'excellent'; }   // !
+        else if (evalDrop <=  25) { analysisAnnotations[i] = 'good'; }        // 
+        else if (evalDrop <=  60) { analysisAnnotations[i] = 'inaccuracy'; }  // ?!
+        else if (evalDrop <= 150) { analysisAnnotations[i] = 'mistake'; }     // ?
+        else                      { analysisAnnotations[i] = 'blunder'; }     // ??
     }
 }
 
@@ -687,12 +751,15 @@ function computeAnnotations() {
 function startFullAnalysis() {
     if (analysisWorker) { analysisWorker.terminate(); }
     analysisWorker = createAnalysisWorker();
-    var total      = analysisHistory.length;
-    var queue      = [];
+
+    var total    = analysisHistory.length;
+    var queue    = [];
     for (var i = 0; i < total; i++) queue.push(i);
-    var pendingIdx     = null;
-    var lastCp         = 0;
-    var uciReady       = false;
+
+    var pendingIdx  = null;
+    var lastCp      = 0;
+    var lastDepth   = 0;   // track highest depth seen for current position
+    var uciReady    = false;
 
     $('#analysisLoadingBanner').css('display', 'flex');
     $('#analysisLoadingText').text('Initializing engine...');
@@ -707,42 +774,62 @@ function startFullAnalysis() {
         pendingIdx = queue.shift();
         var posNum = total - queue.length;
         $('#analysisLoadingText').text('Analyzing position ' + posNum + ' of ' + total + '...');
-        lastCp = 0;
+        lastCp    = 0;
+        lastDepth = 0;
         analysisWorker.postMessage('position fen ' + analysisHistory[pendingIdx].fen);
-        analysisWorker.postMessage('go depth 18 movetime 400');
+        // movetime 1500ms gives Stockfish.js enough time to reach useful depth
+        // depth 20 cap prevents runaway on simple positions
+        analysisWorker.postMessage('go depth 20 movetime 1500');
     }
 
     analysisWorker.onmessage = function(e) {
         var line = e.data;
+
+        // Wait for UCI handshake
         if (!uciReady) {
             if (line.indexOf('uciok') > -1) {
                 uciReady = true;
+                // Remove Skill Level cap — we want full-strength evals
                 analysisWorker.postMessage('setoption name Skill Level value 20');
+                analysisWorker.postMessage('setoption name UCI_LimitStrength value false');
                 analysisWorker.postMessage('isready');
             }
             return;
         }
+
         if (pendingIdx === null && line.indexOf('readyok') > -1) {
             evaluateNext();
             return;
         }
+
+        // Collect best score seen so far — accept ANY depth >= 1
+        // (removing the depth >= 8 filter that caused lastCp to stay 0
+        //  when Stockfish couldn't reach depth 8 in time)
         if (pendingIdx !== null && line.indexOf('info') > -1 && line.indexOf('score') > -1) {
             var depthMatch = line.match(/depth (\d+)/);
-            var depth = depthMatch ? parseInt(depthMatch[1]) : 0;
-            if (depth >= 8) {
+            var d = depthMatch ? parseInt(depthMatch[1]) : 0;
+
+            // Only update if this depth is at least as deep as what we've seen
+            // (Stockfish outputs depths out of order sometimes in multi-PV)
+            if (d >= lastDepth) {
+                var isBlackToMove = (analysisHistory[pendingIdx].fen.indexOf(' b ') > -1);
                 var scMatch = line.match(/score cp (-?\d+)/);
                 var mtMatch = line.match(/score mate (-?\d+)/);
-                var isBlackToMove = (analysisHistory[pendingIdx].fen.indexOf(' b ') > -1);
                 if (scMatch) {
                     var cp = parseInt(scMatch[1]);
-                    lastCp = isBlackToMove ? -cp : cp;
+                    // Stockfish always reports from side-to-move perspective — flip to White
+                    lastCp    = isBlackToMove ? -cp : cp;
+                    lastDepth = d;
                 } else if (mtMatch) {
                     var mt = parseInt(mtMatch[1]);
                     if (isBlackToMove) mt = -mt;
-                    lastCp = mt > 0 ? 9999 : -9999;
+                    lastCp    = mt > 0 ? 9999 : -9999;
+                    lastDepth = d;
                 }
             }
         }
+
+        // bestmove = position done
         if (pendingIdx !== null && line.indexOf('bestmove') > -1) {
             var bm = line.match(/^bestmove ([a-h][1-8][a-h][1-8][qrbn]?)/);
             if (bm) {
@@ -754,13 +841,18 @@ function startFullAnalysis() {
                 analysisBestSAN[pendingIdx] = mv ? mv.san : uci;
             }
             analysisEvals[pendingIdx] = lastCp;
+
+            // Live-update the board if user is on this position
             if (pendingIdx === analysisMoveIndex) { renderAnalysisPosition(); }
             pendingIdx = null;
+
+            // Recompute and redraw after every position
             computeAnnotations();
             renderAnalysisMoveList();
             evaluateNext();
         }
     };
+
     analysisWorker.postMessage('uci');
 }
 
@@ -942,9 +1034,8 @@ $('#loadPgnBtn').on('click', openPgnModal);
 $('#closePgnBtn, #closePgnBtn2').on('click', closePgnModal);
 $('#pgnModal').on('click', function(e) { if ($(e.target).is('#pgnModal')) closePgnModal(); });
 
-$('#pgnDropzone').on('click', function(e) {
-    if (!$(e.target).is('#pgnFileInput')) { $('#pgnFileInput').trigger('click'); }
-});
+// No JS click handler needed — #pgnDropzone is a <label for="pgnFileInput">
+// so the browser natively opens the file picker on click without any JS.
 
 $('#pgnFileInput').on('change', function() {
     var file = this.files[0];
