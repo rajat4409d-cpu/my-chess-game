@@ -72,16 +72,14 @@
                 <div class="op-moves"></div>
             </div>
 
-            <div class="board-profile opponent-profile">
-                <div class="player-info">
-                    <div class="avatar">AI</div>
-                    <span>Stockfish AI (Level 20)</span>
-                    <div class="thinking-loader" id="aiThinkingLoader" style="display: none;">
-                        <span class="thinking-dot"></span>
-                        <span>thinking...</span>
-                    </div>
+            <!-- TOP PLAYER LABEL (Opponent / AI) -->
+            <div class="board-player-label opponent-label">
+                <div class="label-avatar">AI</div>
+                <span id="opponentLabelText">Stockfish AI (Advanced)</span>
+                <div class="thinking-loader" id="aiThinkingLoader" style="display: none;">
+                    <span class="thinking-dot"></span>
+                    <span>thinking...</span>
                 </div>
-                <div id="timerBlack" class="timer">10:00</div>
             </div>
             
             <div id="boardContainer">
@@ -89,7 +87,11 @@
                     <div id="evalFill"></div>
                 </div>
                 <div id="myBoard"></div>
+
+                <!-- RIGHT-SIDE BOARD CONTROLS -->
                 <div id="boardControls">
+                    <button id="settingsBtn" title="Settings"><i class="ph ph-gear"></i></button>
+                    <button id="soundToggleBtn" title="Toggle Sound"><i class="ph ph-speaker-high"></i></button>
                     <button id="flipBoardBtn" title="Flip Board"><i class="ph ph-arrows-clockwise"></i></button>
                 </div>
                 
@@ -105,21 +107,10 @@
                 </div>
             </div>
 
-            <div class="board-profile player-profile">
-                <div class="player-info"><div class="avatar">P1</div><span>You (White)</span></div>
-                <div id="timerWhite" class="timer active">10:00</div>
-            </div>
-
-            <div class="action-buttons">
-                <button id="undoBtn" class="btn-outline" title="Undo Last Move"><i class="ph ph-arrow-u-up-left"></i> Undo</button>
-                <button id="drawBtn" class="btn-outline" title="Offer a Draw"><i class="ph ph-handshake"></i> Draw</button>
-                <button id="resignBtn" class="btn-outline btn-danger-outline" title="Resign Game"><i class="ph ph-flag"></i> Resign</button>
-                <button id="downloadPgnBtn" class="btn-outline" title="Download Match"><i class="ph ph-download"></i> PGN</button>
-                <button id="copyPgnBtn" class="btn-outline" title="Copy PGN to Clipboard"><i class="ph ph-copy"></i> Copy</button>
-                <button id="resetBtn" class="btn-outline" title="Restart Game"><i class="ph ph-arrow-counter-clockwise"></i> Restart</button>
-                <button id="soundToggleBtn" class="btn-outline" title="Toggle Sound"><i class="ph ph-speaker-high"></i></button>
-                <button id="settingsBtn" class="btn-outline" title="Settings"><i class="ph ph-gear"></i></button>
-                <button id="showPanelBtn" class="btn-outline mobile-only-btn" title="Match Data"><i class="ph ph-list"></i></button>
+            <!-- BOTTOM PLAYER LABEL (You) -->
+            <div class="board-player-label player-label">
+                <div class="label-avatar">YOU</div>
+                <span id="playerLabelText">You (White)</span>
             </div>
         </main>
 
@@ -137,6 +128,23 @@
             <div class="history-container">
                 <p class="section-title">Move History</p>
                 <div class="history-list" id="moveHistory"></div>
+            </div>
+
+            <!-- ACTION BUTTONS AT BOTTOM OF RIGHT PANEL -->
+            <div class="panel-action-buttons">
+                <button id="undoBtn" class="panel-btn" title="Undo Last Move"><i class="ph ph-arrow-u-up-left"></i> Undo</button>
+                <button id="drawBtn" class="panel-btn" title="Offer a Draw"><i class="ph ph-handshake"></i> Draw</button>
+                <button id="resignBtn" class="panel-btn panel-btn-danger" title="Resign Game"><i class="ph ph-flag"></i> Resign</button>
+                <button id="resetBtn" class="panel-btn" title="Restart Game"><i class="ph ph-arrow-counter-clockwise"></i> Restart</button>
+                <!-- SHARE BUTTON with dropdown -->
+                <div class="share-btn-wrapper" id="shareBtnWrapper">
+                    <button id="shareBtn" class="panel-btn" title="Share / Export"><i class="ph ph-share-network"></i> Share</button>
+                    <div class="share-dropdown" id="shareDropdown">
+                        <button id="downloadPgnBtn" class="share-option"><i class="ph ph-download"></i> Download PGN</button>
+                        <button id="copyPgnBtn" class="share-option"><i class="ph ph-copy"></i> Copy PGN</button>
+                    </div>
+                </div>
+                <button id="showPanelBtn" class="panel-btn mobile-only-btn" title="Match Data"><i class="ph ph-list"></i></button>
             </div>
         </aside>
     </div>
@@ -220,8 +228,9 @@
                 <div id="puzzleStatus">Find the best move!</div>
                 <div id="puzzleThemeBadge"></div>
 
-                <div class="board-profile opponent-profile">
-                    <div class="player-info"><div class="avatar">PZL</div><span id="puzzleBlackLabel">Opponent</span></div>
+                <div class="board-player-label opponent-label puzzle-label">
+                    <div class="label-avatar">AI</div>
+                    <span id="puzzleBlackLabel">Opponent (Black)</span>
                 </div>
 
                 <div id="puzzleBoardContainer">
@@ -230,12 +239,15 @@
                     </div>
                     <div id="puzzleBoard"></div>
                     <div id="puzzleBoardControls">
+                        <button id="puzzleSettingsBtn" title="Settings"><i class="ph ph-gear"></i></button>
+                        <button id="puzzleSoundBtn" title="Toggle Sound"><i class="ph ph-speaker-high"></i></button>
                         <button id="puzzleFlipBtn" title="Flip Board"><i class="ph ph-arrows-clockwise"></i></button>
                     </div>
                 </div>
 
-                <div class="board-profile player-profile">
-                    <div class="player-info"><div class="avatar">YOU</div><span id="puzzleWhiteLabel">You</span></div>
+                <div class="board-player-label player-label puzzle-label">
+                    <div class="label-avatar">YOU</div>
+                    <span id="puzzleWhiteLabel">You (White)</span>
                 </div>
 
                 <div class="puzzle-action-buttons">
@@ -334,8 +346,9 @@
             <main class="analysis-board-area">
                 <div id="analysisStatus">Game Analysis</div>
                 <div id="analysisOpening" class="analysis-opening-badge"></div>
-                <div class="board-profile opponent-profile">
-                    <div class="player-info"><div class="avatar">AI</div><span id="analysisBlackLabel">Black</span></div>
+                <div class="board-player-label opponent-label analysis-label">
+                    <div class="label-avatar">AI</div>
+                    <span id="analysisBlackLabel">Black</span>
                 </div>
                 <div id="analysisBoardContainer">
                     <div id="analysisEvalBar">
@@ -343,17 +356,14 @@
                     </div>
                     <div id="analysisBoard"></div>
                     <div id="analysisBoardControls">
+                        <button id="analysisSettingsBtn" title="Settings"><i class="ph ph-gear"></i></button>
+                        <button id="analysisSoundBtn" title="Toggle Sound"><i class="ph ph-speaker-high"></i></button>
                         <button id="analysisFlipBtn" title="Flip Board"><i class="ph ph-arrows-clockwise"></i></button>
                     </div>
                 </div>
-                <div class="board-profile player-profile">
-                    <div class="player-info"><div class="avatar">P1</div><span id="analysisWhiteLabel">White</span></div>
-                </div>
-                <div class="analysis-nav-buttons">
-                    <button class="btn-outline" id="anaFirstBtn">⏮</button>
-                    <button class="btn-outline" id="anaPrevBtn">◀</button>
-                    <button class="btn-outline" id="anaNextBtn">▶</button>
-                    <button class="btn-outline" id="anaLastBtn">⏭</button>
+                <div class="board-player-label player-label analysis-label">
+                    <div class="label-avatar">P1</div>
+                    <span id="analysisWhiteLabel">White</span>
                 </div>
             </main>
             <aside class="analysis-right-panel">
@@ -373,6 +383,8 @@
                     <div class="eval-best-move" id="evalBestMove">Best: —</div>
                     <div class="eval-depth" id="evalDepth">Depth: —</div>
                 </div>
+                <p class="section-title">Move List</p>
+                <div class="analysis-history-list" id="analysisMoveList"></div>
                 <div class="analysis-accuracy-row" id="analysisAccuracyRow">
                     <div class="acc-block brilliant"><span class="acc-icon">★</span><span id="cntBrilliant">0</span><span class="acc-label">Brilliant</span></div>
                     <div class="acc-block best"><span class="acc-icon">✓</span><span id="cntBest">0</span><span class="acc-label">Best</span></div>
@@ -383,8 +395,12 @@
                     <div class="acc-block mistake"><span class="acc-icon">?</span><span id="cntMistake">0</span><span class="acc-label">Mistake</span></div>
                     <div class="acc-block blunder"><span class="acc-icon">??</span><span id="cntBlunder">0</span><span class="acc-label">Blunder</span></div>
                 </div>
-                <p class="section-title">Move List</p>
-                <div class="analysis-history-list" id="analysisMoveList"></div>
+                <div class="analysis-nav-buttons">
+                    <button class="btn-outline" id="anaFirstBtn">⏮</button>
+                    <button class="btn-outline" id="anaPrevBtn">◀</button>
+                    <button class="btn-outline" id="anaNextBtn">▶</button>
+                    <button class="btn-outline" id="anaLastBtn">⏭</button>
+                </div>
             </aside>
         </div>
     </div>
@@ -507,5 +523,5 @@
     </div>
 
     <script src="script.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a050e0c1e88ab7e9',t:'MTc4MDM0NDc5Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a058fb39eb94556f',t:'MTc4MDQyOTc2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a059b4902ca69788',t:'MTc4MDQzNzM1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a059c2e56ddb14c8',t:'MTc4MDQzNzk0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
