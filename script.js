@@ -56,23 +56,33 @@ function loadSoundTheme(theme) {
 
 (function() {
     var saved = 'standard';
-    try { saved = localStorage.getItem('chess-sound-theme') || 'standard'; } catch(e) {}
+    try {
+        var unified = JSON.parse(localStorage.getItem('chessengine-settings-v1') || 'null');
+        if (unified && unified.soundTheme) saved = unified.soundTheme;
+        else saved = localStorage.getItem('chess-sound-theme') || 'standard';
+    } catch(e) {}
     loadSoundTheme(saved);
 })();
 
-var timeControl = 600;
+// ── RESTORE ALL PERSISTED SETTINGS ───────────────────────────
+var _savedSettings = (function() {
+    try { return JSON.parse(localStorage.getItem('chessengine-settings-v1') || 'null') || {}; }
+    catch(e) { return {}; }
+})();
+
+var timeControl     = _savedSettings.timeControl || 600;
 var timeWhite = timeControl;
 var timeBlack = timeControl;
 var timerInterval = null;
 var gameStarted = false;
 var aiColor = 'b';
-var gameMode = 'pve';
-var pieceThemeStyle = 'wikipedia';
+var gameMode        = _savedSettings.gameMode    || 'pve';
+var pieceThemeStyle = _savedSettings.pieceTheme  || 'wikipedia';
 
 // --- ENGINE LOGIC ---
 var workerBlob = new Blob(["importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');"], { type: "application/javascript" });
 var engine = new Worker(window.URL.createObjectURL(workerBlob));
-var engineSkill = 10;
+var engineSkill = _savedSettings.engineSkill || 10;
 
 engine.onmessage = function(event) {
     var line = event.data;
@@ -303,11 +313,7 @@ function updateStatus() {
         var playerColor = aiColor==='b' ? 'w' : 'b';
         var opp = gameMode==='pvp' ? 'Player 2' : 'Stockfish ('+(engineSkill===20?'GM':engineSkill===10?'Adv':'Beg')+')';
         var playerWon = (game.turn()!==playerColor);
-        if (typeof recordGameResult!=='undefined') {
-            var _pgn1 = game.pgn();
-            var _op1  = ($('#openingTracker').text()||'').replace(/^[A-Z0-9]+ · /,'').trim();
-            recordGameResult(playerWon?'win':'loss', game.history().length, opp, 'checkmate', _pgn1, _op1);
-        }
+        if (typeof recordGameResult!=='undefined') recordGameResult(playerWon?'win':'loss', game.history().length, opp, 'checkmate');
         var moves = Math.ceil(game.history().length/2);
         if (playerWon) { showGameResultModal('win','Victory!','Checkmate! You won in '+moves+' moves.'); }
         else           { showGameResultModal('loss','Defeat!','Checkmate! Stockfish AI won in '+moves+' moves.'); }
@@ -315,11 +321,7 @@ function updateStatus() {
         clearInterval(timerInterval);
         $status.text("Game Over. It's a Draw!");
         var opp2 = gameMode==='pvp' ? 'Player 2' : 'Stockfish';
-        if (typeof recordGameResult!=='undefined') {
-            var _pgn2 = game.pgn();
-            var _op2  = ($('#openingTracker').text()||'').replace(/^[A-Z0-9]+ · /,'').trim();
-            recordGameResult('draw', game.history().length, opp2, 'draw', _pgn2, _op2);
-        }
+        if (typeof recordGameResult!=='undefined') recordGameResult('draw', game.history().length, opp2, 'draw');
         var moves2 = Math.ceil(game.history().length/2);
         showGameResultModal('draw','Draw Game','The match ended in a draw after '+moves2+' moves.');
     } else {
@@ -573,6 +575,18 @@ $('#saveSettingsBtn').on('click', function() {
         restartGame();
     }
 
+    // ── PERSIST ALL SETTINGS ──────────────────────────────────
+    try {
+        localStorage.setItem('chessengine-settings-v1', JSON.stringify({
+            gameMode:    gameMode,
+            timeControl: timeControl,
+            engineSkill: engineSkill,
+            pieceTheme:  pieceThemeStyle,
+            boardTheme:  $('#themeSelect').val(),
+            soundTheme:  currentSoundTheme
+        }));
+    } catch(e) {}
+
     $('#settingsModal').css('display','none');
 });
 
@@ -589,11 +603,7 @@ $('#resignBtn').on('click', function() {
     $status.text((game.turn()==='w'?'White':'Black')+' Resigned. '+(game.turn()==='w'?'Black':'White')+' wins!');
     if (!isSoundMuted && endSound) { try { endSound.currentTime=0; endSound.play(); } catch(e) {} }
     var opp = gameMode==='pvp' ? 'Player 2' : 'Stockfish';
-    if (typeof recordGameResult!=='undefined') {
-        var _pgn3 = game.pgn();
-        var _op3  = ($('#openingTracker').text()||'').replace(/^[A-Z0-9]+ · /,'').trim();
-        recordGameResult('resign', game.history().length, opp, 'resignation', _pgn3, _op3);
-    }
+    if (typeof recordGameResult!=='undefined') recordGameResult('resign', game.history().length, opp, 'resignation');
     var moves = Math.ceil(game.history().length/2);
     showGameResultModal('loss','Defeat','You resigned after '+moves+' moves.');
 });
@@ -604,11 +614,7 @@ $('#drawBtn').on('click', function() {
     $status.text('Draw agreed.');
     if (!isSoundMuted && endSound) { try { endSound.currentTime=0; endSound.play(); } catch(e) {} }
     var opp = gameMode==='pvp' ? 'Player 2' : 'Stockfish';
-    if (typeof recordGameResult!=='undefined') {
-        var _pgn4 = game.pgn();
-        var _op4  = ($('#openingTracker').text()||'').replace(/^[A-Z0-9]+ · /,'').trim();
-        recordGameResult('draw', game.history().length, opp, 'agreement', _pgn4, _op4);
-    }
+    if (typeof recordGameResult!=='undefined') recordGameResult('draw', game.history().length, opp, 'agreement');
     var moves = Math.ceil(game.history().length/2);
     showGameResultModal('draw','Draw Agreed','Draw agreed after '+moves+' moves.');
 });
@@ -694,6 +700,15 @@ var config = {
 
 board = Chessboard('myBoard', config);
 restartGame();
+
+// Apply saved board theme AFTER board is created
+(function() {
+    var bt = _savedSettings.boardTheme;
+    if (bt) {
+        var _tr = 'theme-classic theme-green theme-blue theme-monochrome theme-coral';
+        $('#myBoard').removeClass(_tr).addClass('theme-' + bt);
+    }
+})();
 
 // ── Dynamic board sizing — fill available height ──────────────
 function resizeBoard() {
@@ -1092,53 +1107,11 @@ $('#analysisFlipBtn').on('click', function() {
 // ============================================================
 // HOME / PROFILE PAGE
 // ============================================================
-// ============================================================
-// PERSISTENT GAME HISTORY (localStorage)
-// ============================================================
-
-var DB_KEY = 'chessengine-stats-v1';
-var HISTORY_KEY = 'chessengine-history-v1';
-var MAX_HISTORY = 100;
-
-function loadDB() {
-    var defaults = { played:0, wins:0, losses:0, draws:0,
-                     streak:0, bestStreak:0, resignations:0,
-                     checkmates:0, analyzed:0 };
-    try {
-        var raw = localStorage.getItem(DB_KEY);
-        if (raw) return Object.assign(defaults, JSON.parse(raw));
-    } catch(e) {}
-    return defaults;
-}
-
-function saveDB(s) {
-    try { localStorage.setItem(DB_KEY, JSON.stringify(s)); } catch(e) {}
-}
-
-function loadHistory() {
-    try {
-        var raw = localStorage.getItem(HISTORY_KEY);
-        if (raw) {
-            var arr = JSON.parse(raw);
-            // Revive timestamp strings to Date objects
-            return arr.map(function(g) {
-                g.timestamp = new Date(g.timestamp);
-                return g;
-            });
-        }
-    } catch(e) {}
-    return [];
-}
-
-function saveHistory(history) {
-    try {
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
-    } catch(e) {}
-}
-
-// sessionStats now mirrors the persisted data
-var sessionStats = loadDB();
-sessionStats.gameHistory = loadHistory();
+var sessionStats = {
+    played:0, wins:0, losses:0, draws:0,
+    streak:0, bestStreak:0, resignations:0,
+    checkmates:0, analyzed:0, gameHistory:[]
+};
 
 var ACHIEVEMENTS = [
     { id:'first_blood',    icon:'<i class="ph ph-star"></i>',          name:'First Move',     desc:'Play your first game',       check:function(s){return s.played>=1;} },
@@ -1161,36 +1134,15 @@ var ACHIEVEMENTS = [
     { id:'puzzle_streak',  icon:'<i class="ph ph-lightning"></i>',      name:'On Fire',        desc:'5 puzzles in a row',         check:function(s){return (puzzleStats.bestStreak||0)>=5;} },
 ];
 
-function recordGameResult(result, moveCount, opponent, by, pgn, opening) {
+function recordGameResult(result, moveCount, opponent, by) {
     sessionStats.played++;
-    if (result==='win')        { sessionStats.wins++;        sessionStats.streak++; }
-    else if (result==='loss')  { sessionStats.losses++;      sessionStats.streak=0; }
-    else if (result==='draw')  { sessionStats.draws++;       sessionStats.streak=0; }
-    else if (result==='resign'){ sessionStats.losses++;      sessionStats.resignations++; sessionStats.streak=0; }
-    if (result==='win' && by==='checkmate') sessionStats.checkmates++;
-    if (sessionStats.streak > sessionStats.bestStreak) sessionStats.bestStreak = sessionStats.streak;
-
-    var entry = {
-        id: Date.now(),
-        result: result,
-        by: by || '',
-        moveCount: moveCount,
-        opponent: opponent,
-        opening: opening || '',
-        pgn: pgn || '',
-        timestamp: new Date()
-    };
-    sessionStats.gameHistory.unshift(entry);
-
-    // Persist stats and history
-    saveDB({
-        played: sessionStats.played, wins: sessionStats.wins,
-        losses: sessionStats.losses, draws: sessionStats.draws,
-        streak: sessionStats.streak, bestStreak: sessionStats.bestStreak,
-        resignations: sessionStats.resignations, checkmates: sessionStats.checkmates,
-        analyzed: sessionStats.analyzed
-    });
-    saveHistory(sessionStats.gameHistory);
+    if (result==='win')       { sessionStats.wins++;     sessionStats.streak++; }
+    else if (result==='loss') { sessionStats.losses++;   sessionStats.streak=0; }
+    else if (result==='draw') { sessionStats.draws++;    sessionStats.streak=0; }
+    else if (result==='resign'){ sessionStats.losses++;  sessionStats.resignations++; sessionStats.streak=0; }
+    if (result==='win'&&by==='checkmate') sessionStats.checkmates++;
+    if (sessionStats.streak>sessionStats.bestStreak) sessionStats.bestStreak=sessionStats.streak;
+    sessionStats.gameHistory.unshift({ result:result, by:by||'', moveCount:moveCount, opponent:opponent, timestamp:new Date() });
 }
 
 function openHome() {
@@ -1211,26 +1163,15 @@ function refreshHomeUI() {
     $('#wrFillDraw').css('width',s.played?dPct+'%':'0%');
     $('#wrFillLoss').css('width',s.played?lPct+'%':'0%');
     if (s.gameHistory.length===0) {
-        $('#homeHistoryList').html('<div class="home-history-empty">No games played yet.<br>Start a game to build your history.</div>');
+        $('#homeHistoryList').html('<div class="home-history-empty">No games played yet this session.<br>Start a game to see your history here.</div>');
     } else {
         var histHtml='';
-        s.gameHistory.slice(0,30).forEach(function(g) {
+        s.gameHistory.slice(0,15).forEach(function(g) {
             var badge=(g.result==='win')?'win':(g.result==='draw')?'draw':(g.result==='resign')?'resign':'loss';
             var label=badge.charAt(0).toUpperCase()+badge.slice(1);
             var byText=g.by?' · '+g.by:'';
-            var openingText=g.opening?' <span class="hg-opening">'+g.opening+'</span>':'';
-            var dateStr=g.timestamp?formatDateShort(g.timestamp):'';
-            var analyzeBtn=g.pgn?'<button class="hg-analyze-btn" data-pgn="'+encodeURIComponent(g.pgn)+'"><i class="ph ph-chart-bar"></i></button>':'';
-            histHtml+='<div class="history-game-row">'+
-                '<span class="hg-result-badge '+badge+'">'+label+'</span>'+
-                '<div class="hg-details">'+
-                    '<div>vs '+g.opponent+byText+openingText+'</div>'+
-                    '<div class="hg-meta">'+dateStr+' · '+g.moveCount+' moves</div>'+
-                '</div>'+
-                analyzeBtn+
-            '</div>';
+            histHtml+='<div class="history-game-row"><span class="hg-result-badge '+badge+'">'+label+'</span><div class="hg-details"><div>vs '+g.opponent+byText+'</div><div class="hg-meta">'+formatTimeAgo(g.timestamp)+'</div></div><span class="hg-moves">'+g.moveCount+' moves</span></div>';
         });
-        histHtml+='<button class="hg-clear-btn" id="clearHistoryBtn"><i class="ph ph-trash"></i> Clear History</button>';
         $('#homeHistoryList').html(histHtml);
     }
     var achHtml='';
@@ -1245,19 +1186,7 @@ function formatTimeAgo(date) {
     var diff=Math.floor((Date.now()-date.getTime())/1000);
     if (diff<60)   return 'just now';
     if (diff<3600) return Math.floor(diff/60)+'m ago';
-    if (diff<86400) return Math.floor(diff/3600)+'h ago';
-    return Math.floor(diff/86400)+'d ago';
-}
-
-function formatDateShort(date) {
-    if (!date || !(date instanceof Date)) return '';
-    var diff = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (diff < 60)    return 'just now';
-    if (diff < 3600)  return Math.floor(diff/60)+'m ago';
-    if (diff < 86400) return Math.floor(diff/3600)+'h ago';
-    var d = date;
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return months[d.getMonth()] + ' ' + d.getDate();
+    return Math.floor(diff/3600)+'h ago';
 }
 
 $('#homeNavBtn').on('click', openHome);
@@ -1265,57 +1194,6 @@ $('#homeNavBtnFromAnalysis').on('click', function() { closeAnalysis(); openHome(
 $('#homeToPlayBtn').on('click', function() { closeHome(); $('#playNavBtn').addClass('active'); });
 $('#homeToAnalyzeBtn').on('click', function() { closeHome(); openAnalysis(); });
 $('#homePlayNowBtn').on('click', function() { closeHome(); $('#playNavBtn').addClass('active'); });
-
-// Analyze a past game from history
-$(document).on('click', '.hg-analyze-btn', function() {
-    var pgn = decodeURIComponent($(this).data('pgn') || '');
-    if (!pgn) return;
-    closeHome();
-    // Open analyzer and load the PGN directly
-    $('#analysisOverlay').addClass('open');
-    $('#analyzeNavBtn').addClass('active');
-    // Pre-fill the PGN textarea and trigger analysis
-    setTimeout(function() {
-        var result = parsePgn(pgn);
-        if (result.error) { alert('Could not load game: ' + result.error); return; }
-        var replayGame = new Chess();
-        analysisHistory = [{ fen: replayGame.fen(), san: null, from: null, to: null, uci: null }];
-        result.moves.forEach(function(m) {
-            replayGame.move({ from: m.from, to: m.to, promotion: m.promotion || 'q' });
-            analysisHistory.push({ fen: replayGame.fen(), san: m.san, from: m.from, to: m.to, uci: m.from+m.to+(m.promotion||'') });
-        });
-        analysisEvals = new Array(analysisHistory.length).fill(null);
-        analysisBestUCI = new Array(analysisHistory.length).fill(null);
-        analysisBestSAN = new Array(analysisHistory.length).fill(null);
-        analysisAnnotations = new Array(analysisHistory.length).fill('');
-        if (analysisBoard) analysisBoard.destroy();
-        analysisBoard = Chessboard('analysisBoard', {
-            pieceTheme: 'https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/{piece}.png',
-            draggable: false, position: 'start'
-        });
-        $(window).resize(analysisBoard.resize);
-        analysisMoveIndex = analysisHistory.length - 1;
-        var wLabel = result.headers.White || 'White';
-        var bLabel = result.headers.Black || 'Black';
-        $('#analysisWhiteLabel').text(wLabel);
-        $('#analysisBlackLabel').text(bLabel);
-        showPerspectivePicker(wLabel, bLabel, function() {
-            renderAnalysisPosition();
-            startFullAnalysis();
-        });
-    }, 100);
-});
-
-// Clear all history
-$(document).on('click', '#clearHistoryBtn', function() {
-    if (!confirm('Clear all game history? This cannot be undone.')) return;
-    sessionStats.gameHistory = [];
-    sessionStats.played = 0; sessionStats.wins = 0; sessionStats.losses = 0;
-    sessionStats.draws = 0; sessionStats.streak = 0; sessionStats.bestStreak = 0;
-    sessionStats.resignations = 0; sessionStats.checkmates = 0;
-    try { localStorage.removeItem(DB_KEY); localStorage.removeItem(HISTORY_KEY); } catch(e) {}
-    refreshHomeUI();
-});
 
 // ============================================================
 // PGN IMPORT & ANALYSIS
