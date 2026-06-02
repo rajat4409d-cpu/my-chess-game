@@ -1812,3 +1812,19 @@ body.dark .result-icon-container.draw { background: #2a2d35; color: #9ca3af; }
     -webkit-user-select: none;
     user-select: none;
 }
+/* -- PIECE ANIMATION -- */
+/* Smooth piece movement via chessboard.js moveSpeed config */
+#myBoard .piece-417db {
+    transition: none; /* chessboard.js handles animation internally */
+    will-change: transform;
+}
+
+/* Landing pulse: piece briefly scales up then settles when dropped */
+@keyframes pieceLand {
+    0%   { transform: scale(1.15); }
+    60%  { transform: scale(0.96); }
+    100% { transform: scale(1);    }
+}
+.piece-land {
+    animation: pieceLand 0.18s ease-out forwards;
+}

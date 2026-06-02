@@ -2,10 +2,65 @@ var board = null;
 var game = new Chess();
 var $status = $('#gameStatus');
 var pendingPromotionMove = null;
-var moveSound = new Audio('https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Move.ogg');
-var captureSound = new Audio('https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Capture.ogg');
-var checkSound = new Audio('https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Check.ogg');
-var endSound = new Audio('https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Victory.ogg');
+// ── SOUND THEMES ─────────────────────────────────────────────
+var SOUND_THEMES = {
+    'standard': {
+        label: 'Standard (Lichess)',
+        move:    'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Move.ogg',
+        capture: 'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Capture.ogg',
+        check:   'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Check.ogg',
+        end:     'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Victory.ogg',
+    },
+    'piano': {
+        label: 'Piano',
+        move:    'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/piano/Move.ogg',
+        capture: 'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/piano/Capture.ogg',
+        check:   'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/piano/Check.ogg',
+        end:     'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Victory.ogg',
+    },
+    'nes': {
+        label: 'NES (8-bit)',
+        move:    'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/nes/Move.ogg',
+        capture: 'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/nes/Capture.ogg',
+        check:   'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/nes/Check.ogg',
+        end:     'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Victory.ogg',
+    },
+    'futuristic': {
+        label: 'Futuristic',
+        move:    'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/futuristic/Move.ogg',
+        capture: 'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/futuristic/Capture.ogg',
+        check:   'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/futuristic/Check.ogg',
+        end:     'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Victory.ogg',
+    },
+    'silent': {
+        label: 'Silent',
+        move: null, capture: null, check: null, end: null,
+    }
+};
+
+var currentSoundTheme = 'standard';
+var moveSound, captureSound, checkSound, endSound;
+
+function loadSoundTheme(theme) {
+    currentSoundTheme = theme;
+    var t = SOUND_THEMES[theme] || SOUND_THEMES['standard'];
+    moveSound    = t.move    ? new Audio(t.move)    : null;
+    captureSound = t.capture ? new Audio(t.capture) : null;
+    checkSound   = t.check   ? new Audio(t.check)   : null;
+    endSound     = t.end     ? new Audio(t.end)     : null;
+    // Preload
+    [moveSound, captureSound, checkSound, endSound].forEach(function(a) {
+        if (a) { a.volume = 1; try { a.load(); } catch(e) {} }
+    });
+    try { localStorage.setItem('chess-sound-theme', theme); } catch(e) {}
+}
+
+// Load saved theme or default
+(function() {
+    var saved = 'standard';
+    try { saved = localStorage.getItem('chess-sound-theme') || 'standard'; } catch(e) {}
+    loadSoundTheme(saved);
+})();
 var timeControl = 600; 
 var timeWhite = timeControl;
 var timeBlack = timeControl;
@@ -47,10 +102,16 @@ engine.onmessage = function(event) {
 
         var match = line.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbn])?/);
         if (match) {
-            var move = game.move({ from: match[1], to: match[2], promotion: match[3] ? match[3] : 'q' });
+            var from = match[1], to = match[2], promo = match[3] ? match[3] : 'q';
+            var move = game.move({ from: from, to: to, promotion: promo });
             if (move) {
-                board.position(game.fen());
-                highlightLastMove(match[1], match[2]);
+                // Animate the piece sliding to its destination
+                board.move(from + '-' + to);
+                // After animation settles, sync board position (handles promotion, en passant etc.)
+                setTimeout(function() {
+                    board.position(game.fen(), false);
+                    highlightLastMove(from, to);
+                }, 220);
                 playMoveSound(move);
                 updateTimerUI();
                 updateHistoryUI();
@@ -194,7 +255,7 @@ function startTimer() {
 function timeOutWin(winner) {
     clearInterval(timerInterval);
     $status.text('Time out! ' + winner + ' wins!');
-    if (!isSoundMuted) endSound.play();
+    if (!isSoundMuted && endSound) { try { endSound.currentTime=0; endSound.play(); } catch(e) {} }
     var playerColor = aiColor === 'b' ? 'White' : 'Black';
     var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish';
     var result = winner === playerColor ? 'win' : 'loss';
@@ -268,11 +329,11 @@ $(document).on('click', '#soundToggleBtn, #mobileSoundToggle', function() {
 
 function playMoveSound(move) {
     if (isSoundMuted) return;
-    moveSound.currentTime=0; captureSound.currentTime=0; checkSound.currentTime=0;
-    if (game.in_checkmate() || game.in_draw()) endSound.play();
-    else if (game.in_check()) checkSound.play();
-    else if (move.captured) captureSound.play();
-    else moveSound.play();
+    function play(snd) { if (snd) { try { snd.currentTime = 0; snd.play(); } catch(e) {} } }
+    if (game.in_checkmate() || game.in_draw()) play(endSound);
+    else if (game.in_check()) play(checkSound);
+    else if (move.captured) play(captureSound);
+    else play(moveSound);
 }
 
 function removeHighlights() { $('#myBoard .square-55d63').removeClass('possible-move possible-capture'); }
@@ -366,6 +427,14 @@ function onDrop(source, target) {
     var move = game.move({ from: source, to: target, promotion: 'q' });
     if (move === null) return 'snapback';
     highlightLastMove(move.from, move.to); playMoveSound(move);
+    // Landing pulse animation on destination square
+    (function(sq) {
+        setTimeout(function() {
+            var $piece = $('#myBoard .square-' + sq + ' .piece-417db');
+            $piece.addClass('piece-land');
+            setTimeout(function() { $piece.removeClass('piece-land'); }, 200);
+        }, 50);
+    })(move.to);
     if (!gameStarted) { gameStarted = true; if (gameMode === 'pvp') startTimer(); }
     updateTimerUI(); updateHistoryUI(); updateCapturedPieces(); updateStatus();
     if (gameMode === 'pve') window.setTimeout(makeComputerMove, 250);
@@ -540,7 +609,11 @@ $('.promo-piece').on('click', function() {
 $('#cancelPromoBtn').on('click', function() { $('#promotionMenu').css('display', 'none'); pendingPromotionMove = null; });
 
 // --- BUTTONS & SETTINGS ---
-$('#settingsBtn').on('click', function() { $('#settingsModal').css('display', 'flex'); });
+$('#settingsBtn').on('click', function() {
+    // Sync dropdowns to current values before opening
+    $('#soundThemeSelect').val(currentSoundTheme);
+    $('#settingsModal').css('display', 'flex');
+});
 $('#closeSettingsBtn').on('click', function() { $('#settingsModal').css('display', 'none'); });
 $('#flipBoardBtn').on('click', function() { board.flip(); });
 
@@ -549,7 +622,8 @@ $('#saveSettingsBtn').on('click', function() {
     timeControl = parseInt($('#timeSelect').val()); 
     engineSkill = parseInt($('#difficultySelect').val()); 
     
-    pieceThemeStyle = $('#pieceSelect').val(); 
+    pieceThemeStyle = $('#pieceSelect').val();
+    loadSoundTheme($('#soundThemeSelect').val());
     $('#myBoard').removeClass('theme-classic theme-green theme-blue theme-monochrome theme-coral').addClass('theme-' + $('#themeSelect').val());
     
     config.pieceTheme = 'https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/{piece}.png';
@@ -571,7 +645,7 @@ $('#resignBtn').on('click', function() {
     if (game.game_over() || !gameStarted) return;
     clearInterval(timerInterval); gameStarted = false;
     $status.text((game.turn() === 'w' ? 'White' : 'Black') + ' Resigned. ' + (game.turn() === 'w' ? 'Black' : 'White') + ' wins!');
-    if (!isSoundMuted) endSound.play();
+    if (!isSoundMuted && endSound) { try { endSound.currentTime=0; endSound.play(); } catch(e) {} }
     var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish';
     if (typeof recordGameResult !== 'undefined') recordGameResult('resign', game.history().length, opp, 'resignation');
 
@@ -584,7 +658,7 @@ $('#drawBtn').on('click', function() {
     if (game.game_over() || !gameStarted) return;
     clearInterval(timerInterval); gameStarted = false;
     $status.text('Draw agreed.');
-    if (!isSoundMuted) endSound.play();
+    if (!isSoundMuted && endSound) { try { endSound.currentTime=0; endSound.play(); } catch(e) {} }
     var opp = gameMode === 'pvp' ? 'Player 2' : 'Stockfish';
     if (typeof recordGameResult !== 'undefined') recordGameResult('draw', game.history().length, opp, 'agreement');
 
@@ -651,9 +725,16 @@ function restartGame() {
     if (gameMode === 'pve' && aiColor === 'w') window.setTimeout(makeComputerMove, 250); 
 }
 
-var config = { 
-    pieceTheme: 'https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/{piece}.png', 
-    draggable: true, position: 'start', onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd 
+var config = {
+    pieceTheme: 'https://chessboardjs.com/img/chesspieces/' + pieceThemeStyle + '/{piece}.png',
+    draggable: true,
+    position: 'start',
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd,
+    moveSpeed: 200,
+    snapbackSpeed: 100,
+    snapSpeed: 80,
 };
 
 board = Chessboard('myBoard', config);
