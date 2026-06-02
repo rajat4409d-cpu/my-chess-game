@@ -1111,51 +1111,21 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn,
 @keyframes pieceLand { 0%{transform:scale(1.15)} 60%{transform:scale(0.96)} 100%{transform:scale(1)} }
 .piece-land { animation: pieceLand 0.18s ease-out forwards; }
 
-/* -- PERSISTENT GAME HISTORY -- */
-.hg-opening {
-    font-size: 11px;
-    color: #10b981;
-    font-weight: 600;
-    background: #ecfdf5;
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-left: 4px;
+/* -- MOBILE TAP-TO-MOVE: disable drag cursor on touch devices -- */
+@media (hover: none) and (pointer: coarse) {
+    /* Touch device — pieces should not show grab cursor */
+    #myBoard .piece-417db {
+        cursor: pointer !important;
+        -webkit-touch-callout: none;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    /* Prevent chessboard.js touch drag by removing its touch-action override */
+    #myBoard {
+        touch-action: auto !important;
+    }
+    #myBoard .square-55d63 {
+        touch-action: auto !important;
+        cursor: pointer !important;
+    }
 }
-.hg-analyze-btn {
-    flex-shrink: 0;
-    background: none;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 5px 8px;
-    cursor: pointer;
-    color: #6b7280;
-    font-size: 14px;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-}
-.hg-analyze-btn:hover { background: #ecfdf5; border-color: #10b981; color: #10b981; }
-.hg-clear-btn {
-    width: 100%;
-    margin-top: 10px;
-    padding: 8px;
-    background: none;
-    border: 1px dashed #fca5a5;
-    border-radius: 8px;
-    color: #ef4444;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.hg-clear-btn:hover { background: #fef2f2; }
-body.dark .hg-analyze-btn { border-color: #374151; color: #9ca3af; }
-body.dark .hg-analyze-btn:hover { background: #064e3b; border-color: #10b981; color: #10b981; }
-body.dark .hg-opening { background: #064e3b; }
-body.dark .hg-clear-btn { border-color: #7f1d1d; color: #f87171; }
-body.dark .hg-clear-btn:hover { background: #1f1010; }

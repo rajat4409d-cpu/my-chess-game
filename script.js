@@ -56,33 +56,23 @@ function loadSoundTheme(theme) {
 
 (function() {
     var saved = 'standard';
-    try {
-        var unified = JSON.parse(localStorage.getItem('chessengine-settings-v1') || 'null');
-        if (unified && unified.soundTheme) saved = unified.soundTheme;
-        else saved = localStorage.getItem('chess-sound-theme') || 'standard';
-    } catch(e) {}
+    try { saved = localStorage.getItem('chess-sound-theme') || 'standard'; } catch(e) {}
     loadSoundTheme(saved);
 })();
 
-// ── RESTORE ALL PERSISTED SETTINGS ───────────────────────────
-var _savedSettings = (function() {
-    try { return JSON.parse(localStorage.getItem('chessengine-settings-v1') || 'null') || {}; }
-    catch(e) { return {}; }
-})();
-
-var timeControl     = _savedSettings.timeControl || 600;
+var timeControl = 600;
 var timeWhite = timeControl;
 var timeBlack = timeControl;
 var timerInterval = null;
 var gameStarted = false;
 var aiColor = 'b';
-var gameMode        = _savedSettings.gameMode    || 'pve';
-var pieceThemeStyle = _savedSettings.pieceTheme  || 'wikipedia';
+var gameMode = 'pve';
+var pieceThemeStyle = 'wikipedia';
 
 // --- ENGINE LOGIC ---
 var workerBlob = new Blob(["importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');"], { type: "application/javascript" });
 var engine = new Worker(window.URL.createObjectURL(workerBlob));
-var engineSkill = _savedSettings.engineSkill || 10;
+var engineSkill = 10;
 
 engine.onmessage = function(event) {
     var line = event.data;
@@ -369,6 +359,11 @@ function onDrop(source, target) {
 function onSnapEnd() { if (pendingPromotionMove===null) board.position(game.fen()); }
 
 // ── CLICK-TO-MOVE ────────────────────────────────────────────
+
+// ── TOUCH DEVICE DETECTION ───────────────────────────────────
+var isTouchDevice = (function() {
+    return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+})();
 var clickSelected = null;
 
 function isPlayerTurn() {
@@ -410,15 +405,42 @@ function executeClickMove(from, to) {
     if (gameMode==='pve') window.setTimeout(makeComputerMove, 250);
 }
 
-var _touchMoved = false;
-document.getElementById('myBoard').addEventListener('touchstart', function(e) { _touchMoved=false; }, { passive: true });
-document.getElementById('myBoard').addEventListener('touchmove',  function(e) { _touchMoved=true;  }, { passive: true });
-document.getElementById('myBoard').addEventListener('touchend',   function(e) {
+// ── TAP-TO-MOVE (mobile) + CLICK-TO-MOVE (desktop) ──────────
+// On touch devices: intercept touchend directly on the board element.
+// We attach at the document level with capture=true so we fire BEFORE
+// chessboard.js sees the event, then stop propagation to kill its drag.
+var _touchStartX = 0, _touchStartY = 0, _touchMoved = false;
+
+document.addEventListener('touchstart', function(e) {
+    var board_el = document.getElementById('myBoard');
+    if (board_el && board_el.contains(e.target)) {
+        _touchStartX = e.touches[0].clientX;
+        _touchStartY = e.touches[0].clientY;
+        _touchMoved  = false;
+    }
+}, { passive: true, capture: true });
+
+document.addEventListener('touchmove', function(e) {
+    var dx = Math.abs(e.touches[0].clientX - _touchStartX);
+    var dy = Math.abs(e.touches[0].clientY - _touchStartY);
+    if (dx > 8 || dy > 8) _touchMoved = true;
+}, { passive: true, capture: true });
+
+document.addEventListener('touchend', function(e) {
+    var board_el = document.getElementById('myBoard');
+    if (!board_el || !board_el.contains(e.target)) return;
     if (_touchMoved) return;
+    // Stop chessboard.js from processing this as a drag
+    e.stopPropagation();
     e.preventDefault();
     handleBoardInteraction(e.changedTouches[0].target);
-}, { passive: false });
-$(document).on('click', '#myBoard', function(e) { handleBoardInteraction(e.target); });
+}, { passive: false, capture: true });
+
+// Desktop click (won't fire on touch because preventDefault above suppresses it)
+$(document).on('click', '#myBoard', function(e) {
+    if (isTouchDevice) return; // handled by touchend above
+    handleBoardInteraction(e.target);
+});
 
 function handleBoardInteraction(target) {
     if (!isPlayerTurn()) return;
@@ -575,18 +597,6 @@ $('#saveSettingsBtn').on('click', function() {
         restartGame();
     }
 
-    // ── PERSIST ALL SETTINGS ──────────────────────────────────
-    try {
-        localStorage.setItem('chessengine-settings-v1', JSON.stringify({
-            gameMode:    gameMode,
-            timeControl: timeControl,
-            engineSkill: engineSkill,
-            pieceTheme:  pieceThemeStyle,
-            boardTheme:  $('#themeSelect').val(),
-            soundTheme:  currentSoundTheme
-        }));
-    } catch(e) {}
-
     $('#settingsModal').css('display','none');
 });
 
@@ -693,22 +703,14 @@ function restartGame() {
 
 var config = {
     pieceTheme: 'https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/{piece}.png',
-    draggable: true, position: 'start',
+    draggable: !isTouchDevice,   // drag on desktop only; mobile uses tap-to-move
+    position: 'start',
     onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd,
     moveSpeed: 200, snapbackSpeed: 100, snapSpeed: 80,
 };
 
 board = Chessboard('myBoard', config);
 restartGame();
-
-// Apply saved board theme AFTER board is created
-(function() {
-    var bt = _savedSettings.boardTheme;
-    if (bt) {
-        var _tr = 'theme-classic theme-green theme-blue theme-monochrome theme-coral';
-        $('#myBoard').removeClass(_tr).addClass('theme-' + bt);
-    }
-})();
 
 // ── Dynamic board sizing — fill available height ──────────────
 function resizeBoard() {
