@@ -359,11 +359,6 @@ function onDrop(source, target) {
 function onSnapEnd() { if (pendingPromotionMove===null) board.position(game.fen()); }
 
 // ── CLICK-TO-MOVE ────────────────────────────────────────────
-
-// ── TOUCH DEVICE DETECTION ───────────────────────────────────
-var isTouchDevice = (function() {
-    return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-})();
 var clickSelected = null;
 
 function isPlayerTurn() {
@@ -405,42 +400,15 @@ function executeClickMove(from, to) {
     if (gameMode==='pve') window.setTimeout(makeComputerMove, 250);
 }
 
-// ── TAP-TO-MOVE (mobile) + CLICK-TO-MOVE (desktop) ──────────
-// On touch devices: intercept touchend directly on the board element.
-// We attach at the document level with capture=true so we fire BEFORE
-// chessboard.js sees the event, then stop propagation to kill its drag.
-var _touchStartX = 0, _touchStartY = 0, _touchMoved = false;
-
-document.addEventListener('touchstart', function(e) {
-    var board_el = document.getElementById('myBoard');
-    if (board_el && board_el.contains(e.target)) {
-        _touchStartX = e.touches[0].clientX;
-        _touchStartY = e.touches[0].clientY;
-        _touchMoved  = false;
-    }
-}, { passive: true, capture: true });
-
-document.addEventListener('touchmove', function(e) {
-    var dx = Math.abs(e.touches[0].clientX - _touchStartX);
-    var dy = Math.abs(e.touches[0].clientY - _touchStartY);
-    if (dx > 8 || dy > 8) _touchMoved = true;
-}, { passive: true, capture: true });
-
-document.addEventListener('touchend', function(e) {
-    var board_el = document.getElementById('myBoard');
-    if (!board_el || !board_el.contains(e.target)) return;
+var _touchMoved = false;
+document.getElementById('myBoard').addEventListener('touchstart', function(e) { _touchMoved=false; }, { passive: true });
+document.getElementById('myBoard').addEventListener('touchmove',  function(e) { _touchMoved=true;  }, { passive: true });
+document.getElementById('myBoard').addEventListener('touchend',   function(e) {
     if (_touchMoved) return;
-    // Stop chessboard.js from processing this as a drag
-    e.stopPropagation();
     e.preventDefault();
     handleBoardInteraction(e.changedTouches[0].target);
-}, { passive: false, capture: true });
-
-// Desktop click (won't fire on touch because preventDefault above suppresses it)
-$(document).on('click', '#myBoard', function(e) {
-    if (isTouchDevice) return; // handled by touchend above
-    handleBoardInteraction(e.target);
-});
+}, { passive: false });
+$(document).on('click', '#myBoard', function(e) { handleBoardInteraction(e.target); });
 
 function handleBoardInteraction(target) {
     if (!isPlayerTurn()) return;
@@ -703,8 +671,7 @@ function restartGame() {
 
 var config = {
     pieceTheme: 'https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/{piece}.png',
-    draggable: !isTouchDevice,   // drag on desktop only; mobile uses tap-to-move
-    position: 'start',
+    draggable: true, position: 'start',
     onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd,
     moveSpeed: 200, snapbackSpeed: 100, snapSpeed: 80,
 };
@@ -714,39 +681,41 @@ restartGame();
 
 // ── Dynamic board sizing — fill available height ──────────────
 function resizeBoard() {
+    var isMobile = window.innerWidth <= 900;
+
+    if (isMobile) {
+        // On mobile, CSS handles sizing via calc() — just let chessboard.js
+        // re-read the container width and redraw pieces at the right scale
+        $('#myBoard').css('width', '');
+        $('#boardContainer').css('width', '');
+        $('.board-player-label').css('width', '');
+        if (board) board.resize();
+        if (typeof analysisBoard !== 'undefined' && analysisBoard) analysisBoard.resize();
+        if (typeof puzzleBoard !== 'undefined' && puzzleBoard) puzzleBoard.resize();
+        return;
+    }
+
     var $boardArea = $('.board-area');
     if (!$boardArea.length) return;
 
     var areaH = $boardArea.height();
     var areaW = $boardArea.width();
 
-    // Chrome heights:
-    // - #gameStatus: ~30px + 3px margin-bottom
-    // - #openingTracker: hidden (0) when no opening
-    // - .board-player-label x2: each ~34px (28px avatar + 4px padding top + 4px padding bottom)
-    // - board-area vertical padding: 12px top + 12px bottom = 24px
-    var labelH = 34; // each label row
-    var statusH = 33; // gameStatus + margin
-    var paddingH = 24; // board-area top+bottom padding
+    var labelH = 34;
+    var statusH = 33;
+    var paddingH = 24;
     var chromeH = statusH + (labelH * 2) + paddingH;
-
     var available = areaH - chromeH;
 
-    // Side elements: evalBar(14px) + gap(10px) + controls(36px) + gap(10px) = 70px
     var sideW = 14 + 10 + 36 + 10;
-    // Board area horizontal padding accounted for in areaW already
     var maxFromWidth = areaW - sideW - 40;
 
     var size = Math.min(available, maxFromWidth);
-    size = Math.max(size, 280); // minimum 280px
-
+    size = Math.max(size, 280);
     var totalW = size + sideW;
 
-    // Size the board
     $('#myBoard').css('width', size + 'px');
-    // Size the container (board + side elements)
     $('#boardContainer').css('width', totalW + 'px');
-    // Size labels to match board width
     $('.board-player-label').css('width', totalW + 'px');
 
     if (board) board.resize();

@@ -988,65 +988,89 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn,
     .mobile-topbar { display: flex; }
     .left-nav, .analysis-left-nav, .puzzle-left-nav, .home-left-nav { display: none !important; }
 
+    /* BASE LAYOUT */
     .app-layout { grid-template-columns: 1fr; padding-top: 52px; }
-    .board-area { padding: 16px 12px 24px 12px; }
-    #gameStatus { font-size: 18px; }
-    #myBoard { width: 100% !important; max-width: 96vw; }
-    #boardContainer { width: 100% !important; max-width: 96vw !important; }
-    .board-player-label { width: 100% !important; max-width: 96vw !important; padding: 4px 0; }
-    .panel-action-buttons { flex-wrap: wrap; }
-    .panel-btn { padding: 7px 5px; font-size: 11px; }
-
     .right-panel { position: fixed; top: 0; right: -100%; width: 85vw; max-width: 340px; height: 100vh; z-index: 650; box-shadow: -4px 0 20px rgba(0,0,0,0.3); transition: right 0.3s cubic-bezier(0.4,0,0.2,1); }
     .right-panel.open { right: 0; }
     .mobile-panel-close { display: block; }
     .mobile-only-btn { display: flex !important; }
-
     #analysisOverlay, #puzzleOverlay, #homeOverlay { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
+    /* PLAY BOARD */
+    .board-area { padding: 8px 0 12px 0; align-items: stretch; width: 100%; box-sizing: border-box; overflow: hidden; }
+    #gameStatus { font-size: 17px; margin-bottom: 2px; text-align: center; padding: 0 12px; }
+    #boardContainer { width: 100% !important; max-width: 100vw !important; gap: 0; margin: 0; }
+    #evalBar { width: 6px !important; min-width: 6px !important; border-radius: 0 3px 3px 0; flex-shrink: 0; }
+    #myBoard { width: calc(100vw - 50px) !important; max-width: calc(100vw - 50px) !important; flex: 1; }
+    #boardControls { width: 36px; flex-shrink: 0; padding: 0 4px; }
+    #boardControls button { width: 28px !important; height: 28px !important; font-size: 14px !important; padding: 0 !important; }
+    .board-player-label { width: 100% !important; max-width: 100vw !important; padding: 6px 8px; box-sizing: border-box; }
+    .label-avatar { width: 28px; height: 28px; font-size: 9px; border-radius: 6px; flex-shrink: 0; }
+    .label-name { font-size: 13px; font-weight: 600; }
+    .label-timer { font-size: 15px; padding: 4px 10px; }
+
+    /* ACTION BUTTONS */
+    .panel-action-buttons { width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 8px 8px 4px 8px; box-sizing: border-box; }
+    .panel-btn { padding: 8px 4px; font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 3px; border-radius: 8px; min-height: 48px; }
+    .panel-btn .ph { font-size: 16px; }
+
+    /* HOME PAGE */
     .home-layout { grid-template-columns: 1fr; padding-top: 52px; height: auto; min-height: 100vh; }
-    .home-main { padding: 20px 16px; gap: 16px; }
-    .home-profile-header { flex-direction: column; text-align: center; gap: 12px; }
-    .home-avatar { width: 56px; height: 56px; font-size: 24px; border-radius: 14px; }
-    .home-username { font-size: 22px; }
-    .home-play-btn { width: 100%; }
-    .home-stat-cards { grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .home-stat-card { padding: 12px 6px; }
+    .home-main { padding: 16px 12px; gap: 14px; overflow-y: auto; }
+    .home-profile-header { flex-direction: row; align-items: center; text-align: left; gap: 12px; padding-bottom: 16px; }
+    .home-avatar { width: 52px; height: 52px; font-size: 22px; border-radius: 12px; flex-shrink: 0; }
+    .home-username { font-size: 20px; }
+    .home-subtitle { font-size: 12px; }
+    .home-play-btn { padding: 10px 18px; font-size: 13px; white-space: nowrap; }
+    .home-stat-cards { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .home-stat-card { padding: 10px 6px; }
     .stat-value { font-size: 22px; }
     .stat-label { font-size: 9px; }
-    .stat-icon { font-size: 18px; }
-    .home-bottom-row { grid-template-columns: 1fr; }
-    .home-section { max-height: 280px; }
-    .home-achievements-grid { grid-template-columns: 1fr; }
+    .stat-icon { font-size: 18px; margin-bottom: 0; }
+    .home-winrate-section { padding: 12px 14px; }
+    .home-bottom-row { grid-template-columns: 1fr; gap: 12px; }
+    .home-section { max-height: 260px; }
+    .home-achievements-grid { grid-template-columns: repeat(2, 1fr); }
 
-    .analysis-layout { grid-template-columns: 1fr; grid-template-rows: auto; padding-top: 52px; height: auto; min-height: 100vh; overflow-y: auto; }
-    .analysis-board-area { padding: 16px 12px; }
-    #analysisStatus { font-size: 18px; }
-    #analysisBoard { width: 100% !important; max-width: 96vw; }
-    #analysisBoardContainer { width: 100%; max-width: 96vw; }
-    .analysis-right-panel { position: relative; top: auto; right: auto; width: 100%; height: auto; max-height: none; border-left: none; border-top: 1px solid #2a2d35; box-shadow: none; }
-    .analysis-history-list { max-height: 300px; }
-    .analysis-nav-buttons { flex-wrap: wrap; }
-    .analysis-nav-buttons .btn-outline { padding: 8px 12px; font-size: 16px; min-width: 44px; }
+    /* ANALYSIS PAGE */
+    .analysis-layout { grid-template-columns: 1fr; padding-top: 52px; height: auto; min-height: 100vh; overflow-y: auto; }
+    .analysis-board-area { padding: 8px 0 12px 0; align-items: stretch; overflow: hidden; }
+    #analysisStatus { font-size: 17px; text-align: center; padding: 0 12px; }
+    #analysisBoardContainer { width: 100% !important; max-width: 100vw !important; gap: 0; }
+    #analysisEvalBar { width: 6px !important; min-width: 6px !important; border-radius: 0 3px 3px 0; flex-shrink: 0; }
+    #analysisBoard { width: calc(100vw - 50px) !important; max-width: calc(100vw - 50px) !important; flex: 1; }
+    #analysisBoardControls { width: 36px; flex-shrink: 0; padding: 0 4px; }
+    #analysisFlipBtn { width: 28px !important; height: 28px !important; font-size: 14px !important; }
+    .analysis-nav-buttons { display: flex; justify-content: center; gap: 10px; padding: 8px 12px; width: 100%; box-sizing: border-box; }
+    .analysis-nav-buttons .btn-outline { flex: 1; padding: 10px; font-size: 18px; min-width: 0; min-height: 44px; }
+    .analysis-right-panel { position: relative; top: auto; right: auto; width: 100%; height: auto; max-height: none; border-left: none; border-top: 1px solid #e5e7eb; box-shadow: none; }
+    .analysis-history-list { max-height: 280px; }
+    .analysis-accuracy-row { grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px 8px; }
+    .acc-block { padding: 5px 2px; }
+    .acc-block span:nth-child(2) { font-size: 14px; }
+    .acc-block .acc-label { font-size: 9px; }
 
-    .puzzle-layout { grid-template-columns: 1fr; grid-template-rows: auto; padding-top: 52px; height: auto; min-height: 100vh; overflow-y: auto; }
-    .puzzle-board-area { padding: 16px 12px; }
-    #puzzleStatus { font-size: 18px; }
-    #puzzleBoard { width: 100% !important; max-width: 96vw; }
-    #puzzleBoardContainer { width: 100%; max-width: 96vw; }
-    .puzzle-right-panel { position: relative; top: auto; right: auto; width: 100%; height: auto; border-left: none; border-top: 1px solid #2a2d35; box-shadow: none; }
-    .puzzle-action-buttons { max-width: 100%; }
-    .puzzle-action-buttons .btn-outline, .puzzle-action-buttons .btn-primary { padding: 10px; font-size: 13px; }
-    .puzzle-stat-grid { grid-template-columns: repeat(4,1fr); gap: 6px; }
+    /* PUZZLE PAGE */
+    .puzzle-layout { grid-template-columns: 1fr; padding-top: 52px; height: auto; min-height: 100vh; overflow-y: auto; }
+    .puzzle-board-area { padding: 8px 0 12px 0; align-items: stretch; overflow: hidden; }
+    #puzzleStatus { font-size: 17px; text-align: center; padding: 0 12px; }
+    #puzzleBoardContainer { width: 100% !important; max-width: 100vw !important; gap: 0; }
+    #puzzleEvalBar { width: 6px !important; min-width: 6px !important; border-radius: 0 3px 3px 0; flex-shrink: 0; }
+    #puzzleBoard { width: calc(100vw - 50px) !important; max-width: calc(100vw - 50px) !important; flex: 1; }
+    #puzzleBoardControls { width: 36px; flex-shrink: 0; padding: 0 4px; }
+    .puzzle-right-panel { position: relative; top: auto; right: auto; width: 100%; height: auto; border-left: none; border-top: 1px solid #e5e7eb; box-shadow: none; }
+    .puzzle-action-buttons { display: flex; gap: 8px; padding: 10px 12px; width: 100%; box-sizing: border-box; }
+    .puzzle-action-buttons .btn-outline, .puzzle-action-buttons .btn-primary { flex: 1; padding: 10px 6px; font-size: 13px; min-height: 44px; }
+    .puzzle-stat-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .puzzle-stat-value { font-size: 18px; }
 
+    /* MODALS */
     .settings-content { width: 90vw; max-width: 340px; padding: 24px 20px; }
     .pgn-modal-content { width: 92vw; max-width: 520px; }
     #pgnTextarea { height: 140px; }
     .pgn-dropzone { padding: 28px 16px; }
     .perspective-content { width: 90vw; max-width: 340px; padding: 24px 20px; }
-    .perspective-options { flex-direction: column; gap: 8px; }
-    .perspective-btn { flex-direction: row; padding: 12px 16px; gap: 12px; }
+    .perspective-options { gap: 8px; }
     #promotionMenu { padding: 18px; }
     .promo-piece { width: 48px; height: 48px; }
     .promo-pieces { gap: 10px; }
@@ -1054,27 +1078,34 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn,
 
 @media (max-width: 480px) {
     .mobile-topbar { height: 46px; padding: 0 10px; }
-    .board-area { padding: 10px 6px 20px 6px; }
-    #gameStatus { font-size: 16px; margin-bottom: 2px; }
-    .label-avatar { width: 26px; height: 26px; font-size: 8px; }
-    .board-player-label { font-size: 12px; gap: 6px; }
-    #evalBar, #analysisEvalBar, #puzzleEvalBar { width: 10px; }
-    .panel-action-buttons { gap: 4px; }
-    .panel-btn { padding: 6px 4px; font-size: 10px; border-radius: 5px; }
-    .home-main { padding: 14px 10px; gap: 12px; }
-    .home-stat-cards { grid-template-columns: repeat(2,1fr); gap: 6px; }
+    #gameStatus { font-size: 15px; }
+    .label-avatar { width: 24px; height: 24px; font-size: 8px; }
+    .label-name { font-size: 12px; }
+    .label-timer { font-size: 13px; padding: 3px 8px; }
+    #evalBar, #analysisEvalBar, #puzzleEvalBar { width: 5px !important; min-width: 5px !important; }
+    #myBoard { width: calc(100vw - 44px) !important; max-width: calc(100vw - 44px) !important; }
+    #analysisBoard { width: calc(100vw - 44px) !important; max-width: calc(100vw - 44px) !important; }
+    #puzzleBoard { width: calc(100vw - 44px) !important; max-width: calc(100vw - 44px) !important; }
+    #boardControls, #analysisBoardControls, #puzzleBoardControls { width: 32px; }
+    #boardControls button, #analysisFlipBtn { width: 26px !important; height: 26px !important; font-size: 13px !important; }
+    .panel-action-buttons { gap: 5px; padding: 6px 6px 4px 6px; }
+    .panel-btn { padding: 7px 3px; font-size: 10px; min-height: 44px; }
+    .home-main { padding: 12px 10px; gap: 10px; }
+    .home-stat-cards { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .home-stat-card { padding: 8px 4px; }
     .stat-value { font-size: 20px; }
-    .home-profile-header { padding-bottom: 14px; }
-    .home-username { font-size: 20px; }
-    .puzzle-board-area { padding: 10px 6px; }
-    .puzzle-action-buttons { flex-wrap: wrap; }
-    .analysis-board-area { padding: 10px 6px; }
-    .analysis-nav-buttons .btn-outline { padding: 6px 10px; font-size: 14px; min-width: 38px; }
+    .stat-icon { font-size: 16px; }
+    .home-avatar { width: 44px; height: 44px; font-size: 20px; }
+    .home-username { font-size: 18px; }
+    .analysis-accuracy-row { grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 5px 6px; }
+    .acc-block span:nth-child(2) { font-size: 13px; }
+    .acc-block .acc-icon { font-size: 11px; }
     .settings-content { width: 94vw; padding: 20px 16px; }
     .pgn-modal-content { width: 96vw; }
     .promo-piece { width: 40px; height: 40px; }
     .promo-pieces { gap: 8px; }
     #promotionMenu p { font-size: 14px; }
+    .analysis-nav-buttons .btn-outline { font-size: 16px; padding: 8px 6px; }
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -1110,22 +1141,3 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn,
 
 @keyframes pieceLand { 0%{transform:scale(1.15)} 60%{transform:scale(0.96)} 100%{transform:scale(1)} }
 .piece-land { animation: pieceLand 0.18s ease-out forwards; }
-
-/* -- MOBILE TAP-TO-MOVE: disable drag cursor on touch devices -- */
-@media (hover: none) and (pointer: coarse) {
-    /* Touch device — pieces should not show grab cursor */
-    #myBoard .piece-417db {
-        cursor: pointer !important;
-        -webkit-touch-callout: none;
-        user-select: none;
-        -webkit-user-select: none;
-    }
-    /* Prevent chessboard.js touch drag by removing its touch-action override */
-    #myBoard {
-        touch-action: auto !important;
-    }
-    #myBoard .square-55d63 {
-        touch-action: auto !important;
-        cursor: pointer !important;
-    }
-}
