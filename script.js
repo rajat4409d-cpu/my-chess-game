@@ -684,30 +684,32 @@ function resizeBoard() {
     var isMobile = window.innerWidth <= 900;
 
     if (isMobile) {
-        // On mobile, CSS handles sizing via calc() — just let chessboard.js
-        // re-read the container width and redraw pieces at the right scale
-        $('#myBoard').css('width', '');
-        $('#boardContainer').css('width', '');
-        $('.board-player-label').css('width', '');
+        // On mobile, CSS calc() handles all sizing.
+        // Clear any inline styles that would override CSS, then let chessboard.js
+        // re-read the container width and redraw pieces at the correct scale.
+        $('#myBoard').css({ width: '', maxWidth: '' });
+        $('#boardContainer').css({ width: '', maxWidth: '' });
+        $('.board-player-label').css({ width: '', maxWidth: '' });
         if (board) board.resize();
         if (typeof analysisBoard !== 'undefined' && analysisBoard) analysisBoard.resize();
         if (typeof puzzleBoard !== 'undefined' && puzzleBoard) puzzleBoard.resize();
         return;
     }
 
+    // Desktop sizing — calculate from available board-area height
     var $boardArea = $('.board-area');
     if (!$boardArea.length) return;
 
     var areaH = $boardArea.height();
     var areaW = $boardArea.width();
 
-    var labelH = 34;
-    var statusH = 33;
+    var labelH   = 34;
+    var statusH  = 33;
     var paddingH = 24;
-    var chromeH = statusH + (labelH * 2) + paddingH;
+    var chromeH  = statusH + (labelH * 2) + paddingH;
     var available = areaH - chromeH;
 
-    var sideW = 14 + 10 + 36 + 10;
+    var sideW = 14 + 10 + 36 + 10; // evalBar + gap + controls + gap
     var maxFromWidth = areaW - sideW - 40;
 
     var size = Math.min(available, maxFromWidth);
