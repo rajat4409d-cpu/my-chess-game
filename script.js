@@ -359,7 +359,7 @@ function onDrop(source, target) {
 function onSnapEnd() { if (pendingPromotionMove===null) board.position(game.fen()); }
 
 // ── CLICK-TO-MOVE ────────────────────────────────────────────
-var isTouchDevice = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+var isTouchDevice = (('ontouchstart' in window) || navigator.maxTouchPoints > 0);
 var clickSelected = null;
 
 function isPlayerTurn() {
@@ -409,7 +409,12 @@ document.getElementById('myBoard').addEventListener('touchend',   function(e) {
     e.preventDefault();
     handleBoardInteraction(e.changedTouches[0].target);
 }, { passive: false });
-$(document).on('click', '#myBoard', function(e) { handleBoardInteraction(e.target); });
+// Capture-phase touch handler for mobile tap-to-move
+var _touchStartX=0,_touchStartY=0,_touchMoved=false;
+document.addEventListener('touchstart',function(e){var el=document.getElementById('myBoard');if(el&&el.contains(e.target)){_touchStartX=e.touches[0].clientX;_touchStartY=e.touches[0].clientY;_touchMoved=false;}},{passive:true,capture:true});
+document.addEventListener('touchmove',function(e){if(Math.abs(e.touches[0].clientX-_touchStartX)>8||Math.abs(e.touches[0].clientY-_touchStartY)>8)_touchMoved=true;},{passive:true,capture:true});
+document.addEventListener('touchend',function(e){var el=document.getElementById('myBoard');if(!el||!el.contains(e.target))return;if(_touchMoved)return;e.stopPropagation();e.preventDefault();handleBoardInteraction(e.changedTouches[0].target);},{passive:false,capture:true});
+$(document).on('click','#myBoard',function(e){if(isTouchDevice)return;handleBoardInteraction(e.target);});
 
 function handleBoardInteraction(target) {
     if (!isPlayerTurn()) return;
@@ -672,7 +677,7 @@ function restartGame() {
 
 var config = {
     pieceTheme: 'https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/{piece}.png',
-    draggable: true, position: 'start',
+    draggable: !isTouchDevice, position: 'start',
     onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd,
     moveSpeed: 200, snapbackSpeed: 100, snapSpeed: 80,
 };
@@ -682,21 +687,29 @@ restartGame();
 
 // ── Dynamic board sizing — fill available height ──────────────
 function resizeBoard() {
-    var isMobile = window.innerWidth <= 900;
-    if (isMobile) {
-        // Let CSS flex handle sizing — clear any JS inline styles
-        $('#myBoard, #analysisBoard, #puzzleBoard').css({ width:'', maxWidth:'', height:'', maxHeight:'' });
-        $('#boardContainer, #analysisBoardContainer, #puzzleBoardContainer').css({ width:'', maxWidth:'' });
-        $('.board-player-label').css({ width:'', maxWidth:'' });
+    if (window.innerWidth <= 900) {
+        // Mobile: clear ALL JS inline sizing so CSS takes over
+        var boards = ['myBoard','analysisBoard','puzzleBoard'];
+        var containers = ['boardContainer','analysisBoardContainer','puzzleBoardContainer'];
+        boards.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) { el.style.width = ''; el.style.maxWidth = ''; el.style.height = ''; }
+        });
+        containers.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) { el.style.width = ''; el.style.maxWidth = ''; }
+        });
+        document.querySelectorAll('.board-player-label').forEach(function(el) {
+            el.style.width = ''; el.style.maxWidth = '';
+        });
         setTimeout(function() {
-            if (board) board.resize();
+            if (typeof board !== 'undefined' && board) board.resize();
             if (typeof analysisBoard !== 'undefined' && analysisBoard) analysisBoard.resize();
             if (typeof puzzleBoard !== 'undefined' && puzzleBoard) puzzleBoard.resize();
-        }, 30);
+        }, 50);
         return;
     }
-
-    // Desktop: calculate from available board-area height
+    // Desktop: fit board to available height
     var $boardArea = $('.board-area');
     if (!$boardArea.length) return;
     var areaH = $boardArea.height();
