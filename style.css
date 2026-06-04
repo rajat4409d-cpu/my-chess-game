@@ -985,209 +985,379 @@ select, #pgnTextarea, .pgn-dropzone, .theme-toggle-btn,
 }
 
 @media (max-width: 900px) {
-    .mobile-topbar { display: flex; }
-    .left-nav, .analysis-left-nav, .puzzle-left-nav, .home-left-nav { display: none !important; }
 
-    /* BASE LAYOUT */
+    /* ═══════════════════════════════════════════
+       GLOBAL: hide sidebars, show topbar
+    ═══════════════════════════════════════════ */
+    .mobile-topbar { display: flex !important; }
+
+    /* Hide ALL left sidebars */
+    .left-nav,
+    .home-left-nav,
+    .puzzle-left-nav,
+    .analysis-left-nav { display: none !important; }
+
+    /* ═══════════════════════════════════════════
+       APP LAYOUT (Play page)
+    ═══════════════════════════════════════════ */
+    body { overflow-x: hidden; }
+
     .app-layout {
-        grid-template-columns: 1fr !important;
-        grid-template-rows: auto !important;
-        padding-top: 52px !important;
-        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100vw !important;
         min-height: 100vh !important;
+        height: auto !important;
         max-height: none !important;
         overflow: visible !important;
+        padding-top: 52px !important;
+        box-sizing: border-box !important;
     }
-    .right-panel {
-        position: fixed; top: 0; right: -100%; width: 85vw; max-width: 340px;
-        height: 100vh; z-index: 650; box-shadow: -4px 0 20px rgba(0,0,0,0.3);
-        transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-    .right-panel.open { right: 0; }
-    .mobile-panel-close { display: block; }
-    .mobile-only-btn { display: flex !important; }
-    #analysisOverlay, #puzzleOverlay, #homeOverlay { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-    /* PLAY BOARD — remove justify-content:center that causes gap */
+    /* Right panel becomes an action bar BELOW board on mobile */
+    .right-panel {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        border-left: none !important;
+        border-top: 1px solid #2a2d35 !important;
+        box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        /* Hide graveyard and move history on mobile — show only buttons */
+    }
+    .right-panel .graveyard-container,
+    .right-panel .history-container { display: none !important; }
+    .right-panel .panel-header { display: none !important; }
+
+    /* Board area */
     .board-area {
-        padding: 10px 0 14px 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         justify-content: flex-start !important;
-        align-items: flex-start !important;
-        overflow: hidden;
-        width: 100%;
+        padding: 8px 0 6px 0 !important;
         height: auto !important;
         min-height: 0 !important;
-        box-sizing: border-box;
+        width: 100vw !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
     }
-    #gameStatus { font-size: 17px; margin-bottom: 3px; text-align: center; width: 100%; padding: 0 12px; box-sizing: border-box; }
-    #openingTracker { margin-bottom: 8px; }
 
-    /* Board container — full width, no overflow */
-    #boardContainer {
+    #gameStatus {
+        font-size: 16px !important;
+        margin-bottom: 2px !important;
+        text-align: center !important;
         width: 100% !important;
-        flex: none !important;
-        gap: 4px !important;
+        padding: 0 10px !important;
+    }
+    #openingTracker { margin-bottom: 6px !important; }
+
+    /* Player labels */
+    .board-player-label {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        padding: 5px 10px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+    .label-avatar { width: 26px !important; height: 26px !important; font-size: 8px !important; flex-shrink: 0 !important; }
+    .label-name { font-size: 13px !important; }
+    .label-timer { font-size: 14px !important; padding: 3px 9px !important; }
+
+    /* Board container — fill full width */
+    #boardContainer {
+        display: flex !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        gap: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow: hidden;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        position: relative !important;
     }
-    /* Eval bar — thin strip */
+    /* Thin eval bar on left */
     #evalBar {
-        width: 8px !important;
-        min-width: 8px !important;
+        width: 6px !important;
+        min-width: 6px !important;
         flex-shrink: 0 !important;
-        border-radius: 2px !important;
+        border-radius: 0 3px 3px 0 !important;
     }
-    /* Board — fills everything left after eval bar and controls */
+    /* Board fills remaining width */
     #myBoard {
-        width: calc(100vw - 8px - 40px - 10px) !important;
-        max-width: calc(100vw - 8px - 40px - 10px) !important;
-        flex: none !important;
+        flex: 1 !important;
+        width: 0 !important; /* flex:1 handles this */
+        min-width: 0 !important;
     }
-    /* Side controls */
+    /* Right side controls — vertical stack */
     #boardControls {
-        width: 36px !important;
+        width: 38px !important;
+        min-width: 38px !important;
         flex-shrink: 0 !important;
-        padding-top: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
         gap: 6px !important;
+        padding: 4px !important;
     }
     #boardControls button {
         width: 30px !important;
         height: 30px !important;
         font-size: 14px !important;
         padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
-    /* Player labels */
-    .board-player-label {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 5px 8px !important;
-        box-sizing: border-box !important;
-    }
-    .label-avatar { width: 28px; height: 28px; font-size: 9px; border-radius: 6px; flex-shrink: 0; }
-    .label-name { font-size: 13px; }
-    .label-timer { font-size: 14px; padding: 4px 10px; }
-
-    /* Action buttons */
+    /* Action buttons — horizontal row below board */
     .panel-action-buttons {
-        width: 100% !important;
-        display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
         gap: 6px !important;
-        padding: 8px 10px 6px 10px !important;
+        padding: 8px 10px !important;
+        width: 100% !important;
         box-sizing: border-box !important;
+        overflow-x: auto !important;
     }
     .panel-btn {
+        flex: 1 !important;
+        min-width: 56px !important;
         padding: 8px 4px !important;
         font-size: 11px !important;
+        font-weight: 600 !important;
+        display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         gap: 3px !important;
-        min-height: 50px !important;
         border-radius: 8px !important;
+        min-height: 52px !important;
+        white-space: nowrap !important;
     }
     .panel-btn .ph { font-size: 17px !important; }
+    .share-btn-wrapper { flex: 1 !important; min-width: 56px !important; }
+    .share-dropdown { bottom: calc(100% + 6px) !important; top: auto !important; }
+    .mobile-only-btn { display: flex !important; }
 
-    /* HOME PAGE */
-    .home-layout { grid-template-columns: 1fr; padding-top: 52px; height: auto; min-height: 100vh; }
-    .home-main { padding: 14px 12px; gap: 12px; overflow-y: auto; }
-    .home-profile-header { flex-direction: row; align-items: center; gap: 12px; padding-bottom: 14px; }
-    .home-avatar { width: 50px; height: 50px; font-size: 20px; border-radius: 12px; flex-shrink: 0; }
-    .home-profile-info { flex: 1; }
-    .home-username { font-size: 19px; }
-    .home-subtitle { font-size: 11px; }
-    .home-play-btn { padding: 10px 14px; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
-    .home-stat-cards { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .home-stat-card { padding: 10px 6px; }
-    .stat-value { font-size: 22px; }
-    .stat-label { font-size: 9px; }
-    .stat-icon { font-size: 18px; margin-bottom: 0; }
-    .home-winrate-section { padding: 12px 14px; }
-    .home-bottom-row { grid-template-columns: 1fr; gap: 12px; }
-    .home-section { max-height: 260px; }
-    .home-achievements-grid { grid-template-columns: repeat(2, 1fr); }
-
-    /* ANALYSIS PAGE */
-    .analysis-layout { grid-template-columns: 1fr; padding-top: 52px; height: auto; min-height: 100vh; overflow-y: auto; }
-    .analysis-board-area {
-        padding: 10px 0 12px 0 !important;
-        justify-content: flex-start !important;
-        align-items: flex-start !important;
-        overflow: hidden;
+    /* ═══════════════════════════════════════════
+       HOME PAGE
+    ═══════════════════════════════════════════ */
+    #homeOverlay {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important;
+        width: 100vw !important; height: 100vh !important;
+        overflow-y: auto !important;
+        padding-top: 52px !important;
+        box-sizing: border-box !important;
     }
-    #analysisStatus { font-size: 17px; text-align: center; width: 100%; padding: 0 12px; box-sizing: border-box; }
-    #analysisBoardContainer { width: 100% !important; flex: none !important; gap: 4px !important; margin: 0 !important; overflow: hidden; }
-    #analysisEvalBar { width: 8px !important; min-width: 8px !important; flex-shrink: 0 !important; border-radius: 2px !important; }
-    #analysisBoard { width: calc(100vw - 8px - 40px - 10px) !important; max-width: calc(100vw - 8px - 40px - 10px) !important; flex: none !important; }
-    #analysisBoardControls { width: 36px !important; flex-shrink: 0 !important; padding-top: 0 !important; }
-    #analysisFlipBtn { width: 30px !important; height: 30px !important; font-size: 14px !important; }
-    .analysis-nav-buttons { display: flex; gap: 8px; padding: 8px 10px; width: 100%; box-sizing: border-box; }
-    .analysis-nav-buttons .btn-outline { flex: 1; padding: 10px; font-size: 18px; min-height: 44px; min-width: 0; }
-    .analysis-right-panel { position: relative; width: 100%; height: auto; max-height: none; border-left: none; border-top: 1px solid #2a2d35; box-shadow: none; }
-    .analysis-history-list { max-height: 260px; }
-    .analysis-accuracy-row { grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px 8px; }
-    .acc-block { padding: 5px 2px; }
-    .acc-block span:nth-child(2) { font-size: 13px; }
-    .acc-block .acc-label { font-size: 9px; }
-    .acc-block .acc-icon { font-size: 11px; }
+    .home-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+    .home-main { padding: 14px 12px !important; gap: 12px !important; }
+    .home-profile-header {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding-bottom: 12px !important;
+    }
+    .home-avatar { width: 48px !important; height: 48px !important; font-size: 20px !important; flex-shrink: 0 !important; }
+    .home-profile-info { flex: 1 !important; min-width: 0 !important; }
+    .home-username { font-size: 18px !important; }
+    .home-subtitle { font-size: 11px !important; }
+    .home-play-btn { padding: 9px 14px !important; font-size: 13px !important; flex-shrink: 0 !important; }
+    .home-stat-cards { grid-template-columns: repeat(3, 1fr) !important; gap: 7px !important; }
+    .home-stat-card { padding: 10px 6px !important; }
+    .stat-value { font-size: 22px !important; }
+    .stat-label { font-size: 9px !important; }
+    .stat-icon { font-size: 18px !important; margin-bottom: 0 !important; }
+    .home-bottom-row { grid-template-columns: 1fr !important; gap: 10px !important; }
+    .home-section { max-height: 240px !important; }
+    .home-achievements-grid { grid-template-columns: repeat(2, 1fr) !important; }
 
-    /* PUZZLE PAGE */
-    .puzzle-layout { grid-template-columns: 1fr; padding-top: 52px; height: auto; min-height: 100vh; overflow-y: auto; }
+    /* ═══════════════════════════════════════════
+       PUZZLE PAGE
+    ═══════════════════════════════════════════ */
+    #puzzleOverlay {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important;
+        width: 100vw !important; height: 100vh !important;
+        overflow-y: auto !important;
+        padding-top: 52px !important;
+        box-sizing: border-box !important;
+    }
+    .puzzle-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        height: auto !important;
+    }
     .puzzle-board-area {
-        padding: 10px 0 12px 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         justify-content: flex-start !important;
-        align-items: flex-start !important;
-        overflow: hidden;
+        padding: 8px 0 6px 0 !important;
+        width: 100vw !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
     }
-    #puzzleStatus { font-size: 17px; text-align: center; width: 100%; padding: 0 12px; box-sizing: border-box; }
-    #puzzleBoardContainer { width: 100% !important; flex: none !important; gap: 4px !important; margin: 0 !important; overflow: hidden; }
-    #puzzleEvalBar { width: 8px !important; min-width: 8px !important; flex-shrink: 0 !important; border-radius: 2px !important; }
-    #puzzleBoard { width: calc(100vw - 8px - 40px - 10px) !important; max-width: calc(100vw - 8px - 40px - 10px) !important; flex: none !important; }
-    #puzzleBoardControls { width: 36px !important; flex-shrink: 0 !important; padding-top: 0 !important; }
-    .puzzle-right-panel { position: relative; width: 100%; height: auto; border-left: none; border-top: 1px solid #2a2d35; box-shadow: none; }
-    .puzzle-action-buttons { display: flex; gap: 8px; padding: 8px 10px; width: 100%; box-sizing: border-box; }
-    .puzzle-action-buttons .btn-outline, .puzzle-action-buttons .btn-primary { flex: 1; padding: 10px 6px; font-size: 13px; min-height: 44px; }
-    .puzzle-stat-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .puzzle-stat-value { font-size: 18px; }
+    #puzzleStatus { font-size: 16px !important; text-align: center !important; width: 100% !important; padding: 0 10px !important; }
+    #puzzleBoardContainer {
+        display: flex !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        gap: 0 !important;
+        overflow: hidden !important;
+    }
+    #puzzleEvalBar { width: 6px !important; min-width: 6px !important; flex-shrink: 0 !important; border-radius: 0 3px 3px 0 !important; }
+    #puzzleBoard { flex: 1 !important; width: 0 !important; min-width: 0 !important; }
+    #puzzleBoardControls { width: 38px !important; min-width: 38px !important; flex-shrink: 0 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 6px !important; padding: 4px !important; }
+    #puzzleBoardControls button { width: 30px !important; height: 30px !important; font-size: 14px !important; padding: 0 !important; }
 
-    /* MODALS */
-    .settings-content { width: 90vw; max-width: 340px; padding: 24px 20px; }
-    .pgn-modal-content { width: 92vw; max-width: 520px; }
-    #pgnTextarea { height: 140px; }
-    .pgn-dropzone { padding: 28px 16px; }
-    .perspective-content { width: 90vw; max-width: 340px; padding: 24px 20px; }
-    .perspective-options { gap: 8px; }
-    #promotionMenu { padding: 18px; }
-    .promo-piece { width: 48px; height: 48px; }
-    .promo-pieces { gap: 10px; }
+    /* Puzzle action buttons below board */
+    .puzzle-action-buttons {
+        display: flex !important;
+        gap: 8px !important;
+        padding: 8px 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .puzzle-action-buttons .btn-outline,
+    .puzzle-action-buttons .btn-primary {
+        flex: 1 !important;
+        padding: 10px 6px !important;
+        font-size: 13px !important;
+        min-height: 44px !important;
+        text-align: center !important;
+        justify-content: center !important;
+    }
+
+    /* Puzzle right panel becomes bottom panel */
+    .puzzle-right-panel {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        border-left: none !important;
+        border-top: 1px solid #2a2d35 !important;
+        box-shadow: none !important;
+        padding: 10px 12px !important;
+        box-sizing: border-box !important;
+    }
+    .puzzle-stat-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
+    .puzzle-stat-value { font-size: 18px !important; }
+
+    /* ═══════════════════════════════════════════
+       ANALYSIS PAGE
+    ═══════════════════════════════════════════ */
+    #analysisOverlay {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important;
+        width: 100vw !important; height: 100vh !important;
+        overflow-y: auto !important;
+        padding-top: 52px !important;
+        box-sizing: border-box !important;
+    }
+    .analysis-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+    .analysis-board-area {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        padding: 8px 0 6px 0 !important;
+        width: 100vw !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+    }
+    #analysisStatus { font-size: 16px !important; text-align: center !important; width: 100% !important; padding: 0 10px !important; }
+    #analysisBoardContainer {
+        display: flex !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        gap: 0 !important;
+        overflow: hidden !important;
+    }
+    #analysisEvalBar { width: 6px !important; min-width: 6px !important; flex-shrink: 0 !important; border-radius: 0 3px 3px 0 !important; }
+    #analysisBoard { flex: 1 !important; width: 0 !important; min-width: 0 !important; }
+    #analysisBoardControls { width: 38px !important; min-width: 38px !important; flex-shrink: 0 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 6px !important; padding: 4px !important; }
+    #analysisBoardControls button { width: 30px !important; height: 30px !important; font-size: 14px !important; padding: 0 !important; }
+
+    /* Nav buttons below board */
+    .analysis-nav-buttons {
+        display: flex !important;
+        gap: 8px !important;
+        padding: 8px 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .analysis-nav-buttons .btn-outline {
+        flex: 1 !important;
+        padding: 10px !important;
+        font-size: 20px !important;
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Analysis right panel becomes bottom panel */
+    .analysis-right-panel {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        border-left: none !important;
+        border-top: 1px solid #2a2d35 !important;
+        box-shadow: none !important;
+    }
+    .analysis-history-list { max-height: 260px !important; }
+    .analysis-accuracy-row {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 4px !important;
+        padding: 6px 8px !important;
+    }
+    .acc-block { padding: 5px 2px !important; }
+    .acc-block span:nth-child(2) { font-size: 13px !important; }
+    .acc-block .acc-label { font-size: 9px !important; }
+    .acc-block .acc-icon { font-size: 11px !important; }
+
+    /* ═══════════════════════════════════════════
+       MODALS
+    ═══════════════════════════════════════════ */
+    .settings-content { width: 90vw !important; max-width: 340px !important; padding: 22px 18px !important; }
+    .pgn-modal-content { width: 92vw !important; }
+    #pgnTextarea { height: 130px !important; }
+    .perspective-content { width: 88vw !important; max-width: 340px !important; }
+    .perspective-options { gap: 8px !important; }
+    #promotionMenu { padding: 16px !important; }
+    .promo-piece { width: 46px !important; height: 46px !important; }
 }
 
 @media (max-width: 480px) {
-    .mobile-topbar { height: 46px; padding: 0 10px; }
-    #gameStatus { font-size: 15px; }
-    .label-avatar { width: 24px; height: 24px; font-size: 8px; }
-    .label-name { font-size: 12px; }
-    .label-timer { font-size: 13px; padding: 3px 8px; }
-    #evalBar, #analysisEvalBar, #puzzleEvalBar { width: 6px !important; min-width: 6px !important; }
-    #myBoard { width: calc(100vw - 6px - 40px - 8px) !important; max-width: calc(100vw - 6px - 40px - 8px) !important; }
-    #analysisBoard { width: calc(100vw - 6px - 40px - 8px) !important; max-width: calc(100vw - 6px - 40px - 8px) !important; }
-    #puzzleBoard { width: calc(100vw - 6px - 40px - 8px) !important; max-width: calc(100vw - 6px - 40px - 8px) !important; }
-    .panel-action-buttons { gap: 4px !important; padding: 6px 8px 4px 8px !important; }
-    .panel-btn { font-size: 10px !important; padding: 7px 3px !important; min-height: 46px !important; }
+    .mobile-topbar { height: 46px !important; padding: 0 8px !important; }
+    #gameStatus, #puzzleStatus, #analysisStatus { font-size: 14px !important; }
+    .label-avatar { width: 22px !important; height: 22px !important; }
+    .label-name { font-size: 11px !important; }
+    .label-timer { font-size: 12px !important; }
+    .panel-btn { font-size: 10px !important; min-height: 48px !important; min-width: 48px !important; }
     .panel-btn .ph { font-size: 15px !important; }
-    .home-main { padding: 10px 10px; gap: 10px; }
-    .home-stat-cards { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .home-stat-card { padding: 8px 4px; }
-    .stat-value { font-size: 20px; }
-    .home-avatar { width: 44px; height: 44px; }
-    .home-username { font-size: 17px; }
-    .analysis-accuracy-row { gap: 3px; padding: 5px 6px; }
-    .settings-content { width: 94vw; padding: 20px 16px; }
-    .pgn-modal-content { width: 96vw; }
-    .promo-piece { width: 40px; height: 40px; }
-    #promotionMenu p { font-size: 14px; }
-    .analysis-nav-buttons .btn-outline { font-size: 16px; padding: 8px 4px; }
+    .home-stat-cards { gap: 5px !important; }
+    .stat-value { font-size: 20px !important; }
+    .home-main { padding: 10px !important; }
+    .settings-content { width: 94vw !important; }
+    .acc-block span:nth-child(2) { font-size: 12px !important; }
+    .analysis-nav-buttons .btn-outline { font-size: 17px !important; }
+    .promo-piece { width: 38px !important; height: 38px !important; }
 }
 
 @media (hover: none) and (pointer: coarse) {

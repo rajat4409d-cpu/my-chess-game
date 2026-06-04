@@ -359,6 +359,7 @@ function onDrop(source, target) {
 function onSnapEnd() { if (pendingPromotionMove===null) board.position(game.fen()); }
 
 // ── CLICK-TO-MOVE ────────────────────────────────────────────
+var isTouchDevice = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
 var clickSelected = null;
 
 function isPlayerTurn() {
@@ -682,44 +683,34 @@ restartGame();
 // ── Dynamic board sizing — fill available height ──────────────
 function resizeBoard() {
     var isMobile = window.innerWidth <= 900;
-
     if (isMobile) {
-        // On mobile, CSS calc() handles all sizing.
-        // Clear any inline styles that would override CSS, then let chessboard.js
-        // re-read the container width and redraw pieces at the correct scale.
-        $('#myBoard').css({ width: '', maxWidth: '' });
-        $('#boardContainer').css({ width: '', maxWidth: '' });
-        $('.board-player-label').css({ width: '', maxWidth: '' });
-        if (board) board.resize();
-        if (typeof analysisBoard !== 'undefined' && analysisBoard) analysisBoard.resize();
-        if (typeof puzzleBoard !== 'undefined' && puzzleBoard) puzzleBoard.resize();
+        // Let CSS flex handle sizing — clear any JS inline styles
+        $('#myBoard, #analysisBoard, #puzzleBoard').css({ width:'', maxWidth:'', height:'', maxHeight:'' });
+        $('#boardContainer, #analysisBoardContainer, #puzzleBoardContainer').css({ width:'', maxWidth:'' });
+        $('.board-player-label').css({ width:'', maxWidth:'' });
+        setTimeout(function() {
+            if (board) board.resize();
+            if (typeof analysisBoard !== 'undefined' && analysisBoard) analysisBoard.resize();
+            if (typeof puzzleBoard !== 'undefined' && puzzleBoard) puzzleBoard.resize();
+        }, 30);
         return;
     }
 
-    // Desktop sizing — calculate from available board-area height
+    // Desktop: calculate from available board-area height
     var $boardArea = $('.board-area');
     if (!$boardArea.length) return;
-
     var areaH = $boardArea.height();
     var areaW = $boardArea.width();
-
-    var labelH   = 34;
-    var statusH  = 33;
-    var paddingH = 24;
-    var chromeH  = statusH + (labelH * 2) + paddingH;
+    var labelH = 34, statusH = 33, paddingH = 24;
+    var chromeH = statusH + (labelH * 2) + paddingH;
     var available = areaH - chromeH;
-
-    var sideW = 14 + 10 + 36 + 10; // evalBar + gap + controls + gap
+    var sideW = 14 + 10 + 36 + 10;
     var maxFromWidth = areaW - sideW - 40;
-
-    var size = Math.min(available, maxFromWidth);
-    size = Math.max(size, 280);
+    var size = Math.max(280, Math.min(available, maxFromWidth));
     var totalW = size + sideW;
-
     $('#myBoard').css('width', size + 'px');
     $('#boardContainer').css('width', totalW + 'px');
     $('.board-player-label').css('width', totalW + 'px');
-
     if (board) board.resize();
     if (typeof analysisBoard !== 'undefined' && analysisBoard) analysisBoard.resize();
     if (typeof puzzleBoard !== 'undefined' && puzzleBoard) puzzleBoard.resize();
