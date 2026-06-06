@@ -401,33 +401,33 @@ function executeClickMove(from, to) {
     if (gameMode==='pve') window.setTimeout(makeComputerMove, 250);
 }
 
-var _touchMoved = false;
-document.getElementById('myBoard').addEventListener('touchstart', function(e) { _touchMoved=false; }, { passive: true });
-document.getElementById('myBoard').addEventListener('touchmove',  function(e) { _touchMoved=true;  }, { passive: true });
-document.getElementById('myBoard').addEventListener('touchend',   function(e) {
-    if (_touchMoved) return;
-    e.preventDefault();
-    handleBoardInteraction(e.changedTouches[0].target);
-}, { passive: false });
-$(document).on('click', '#myBoard', function(e) { handleBoardInteraction(e.target); });
 
-// ── TAP-TO-MOVE: capture phase fires before chessboard.js ──
+// ── TAP-TO-MOVE: capture phase, fires before chessboard.js ────
 var _touchStartX=0, _touchStartY=0, _touchMoved=false;
 document.addEventListener('touchstart', function(e) {
-    var el=document.getElementById('myBoard');
-    if(el && el.contains(e.target)){ _touchStartX=e.touches[0].clientX; _touchStartY=e.touches[0].clientY; _touchMoved=false; }
-}, {passive:true, capture:true});
+    var el = document.getElementById('myBoard');
+    if (el && el.contains(e.target)) {
+        _touchStartX = e.touches[0].clientX;
+        _touchStartY = e.touches[0].clientY;
+        _touchMoved  = false;
+    }
+}, { passive: true, capture: true });
 document.addEventListener('touchmove', function(e) {
-    if(Math.abs(e.touches[0].clientX-_touchStartX)>8||Math.abs(e.touches[0].clientY-_touchStartY)>8) _touchMoved=true;
-}, {passive:true, capture:true});
+    if (Math.abs(e.touches[0].clientX - _touchStartX) > 8 ||
+        Math.abs(e.touches[0].clientY - _touchStartY) > 8) _touchMoved = true;
+}, { passive: true, capture: true });
 document.addEventListener('touchend', function(e) {
-    var el=document.getElementById('myBoard');
-    if(!el||!el.contains(e.target)) return;
-    if(_touchMoved) return;
-    e.stopPropagation(); e.preventDefault();
+    var el = document.getElementById('myBoard');
+    if (!el || !el.contains(e.target)) return;
+    if (_touchMoved) return;
+    e.stopPropagation();
+    e.preventDefault();
     handleBoardInteraction(e.changedTouches[0].target);
-}, {passive:false, capture:true});
-$(document).on('click','#myBoard',function(e){ if(isTouchDevice) return; handleBoardInteraction(e.target); });
+}, { passive: false, capture: true });
+$(document).on('click', '#myBoard', function(e) {
+    if (isTouchDevice) return;
+    handleBoardInteraction(e.target);
+});
 
 function handleBoardInteraction(target) {
     if (!isPlayerTurn()) return;
@@ -723,8 +723,8 @@ function resizeBoard() {
     if (!$ba.length) return;
     var aH = $ba.height(), aW = $ba.width();
     var chromeH = 33 + 34*2 + 24;
-    var sideW   = 14 + 10 + 36 + 10;
-    var size    = Math.max(280, Math.min(aH - chromeH, aW - sideW - 40));
+    var sideW = 14 + 10 + 36 + 10;
+    var size = Math.max(280, Math.min(aH - chromeH, aW - sideW - 40));
     $('#myBoard').css('width', size+'px');
     $('#boardContainer').css('width', (size+sideW)+'px');
     $('.board-player-label').css('width', (size+sideW)+'px');
