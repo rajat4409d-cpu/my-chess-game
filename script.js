@@ -402,7 +402,7 @@ function executeClickMove(from, to) {
 }
 
 
-// ── TAP-TO-MOVE: capture phase, fires before chessboard.js ────
+// ── TAP-TO-MOVE: capture phase fires before chessboard.js ────
 var _touchStartX=0, _touchStartY=0, _touchMoved=false;
 document.addEventListener('touchstart', function(e) {
     var el = document.getElementById('myBoard');
