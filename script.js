@@ -35,6 +35,20 @@ var SOUND_THEMES = {
     'silent': {
         label: 'Silent',
         move: null, capture: null, check: null, end: null,
+    },
+    'sfx': {
+        label: 'SFX',
+        move:    'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/sfx/Move.ogg',
+        capture: 'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/sfx/Capture.ogg',
+        check:   'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/sfx/Check.ogg',
+        end:     'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Victory.ogg',
+    },
+    'robot': {
+        label: 'Robot',
+        move:    'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/robot/Move.ogg',
+        capture: 'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/robot/Capture.ogg',
+        check:   'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/robot/Check.ogg',
+        end:     'https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Victory.ogg',
     }
 };
 
@@ -68,6 +82,23 @@ var gameStarted = false;
 var aiColor = 'b';
 var gameMode = 'pve';
 var pieceThemeStyle = 'wikipedia';
+
+var PIECE_THEME_URLS = {
+    'wikipedia': 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+    'alpha': 'https://chessboardjs.com/img/chesspieces/alpha/{piece}.png',
+    'uscf': 'https://chessboardjs.com/img/chesspieces/uscf/{piece}.png',
+    'merida': 'https://lichess1.org/assets/piece/merida/{piece}.svg',
+    'staunty': 'https://lichess1.org/assets/piece/staunty/{piece}.svg'
+};
+
+function getPieceTheme(style) {
+    return PIECE_THEME_URLS[style] || PIECE_THEME_URLS['wikipedia'];
+}
+
+function getPieceImage(style, pieceCode) {
+    var url = getPieceTheme(style);
+    return url.replace('{piece}', pieceCode);
+}
 
 // --- ENGINE LOGIC ---
 var workerBlob = new Blob(["importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');"], { type: "application/javascript" });
@@ -230,8 +261,8 @@ function updateCapturedPieces() {
     for (var i=0;i<8;i++) for (var j=0;j<8;j++) if (boardState[i][j]) { counts[boardState[i][j].color][boardState[i][j].type]++; if(boardState[i][j].color==='w') sW+=vals[boardState[i][j].type]; else sB+=vals[boardState[i][j].type]; }
     var wHTML='', bHTML='', order=['q','r','b','n','p'];
     order.forEach(function(t) {
-        for(var i=0;i<starts['b'][t]-counts['b'][t];i++) wHTML+='<img src="https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/b'+t.toUpperCase()+'.png">';
-        for(var i=0;i<starts['w'][t]-counts['w'][t];i++) bHTML+='<img src="https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/w'+t.toUpperCase()+'.png">';
+        for(var i=0;i<starts['b'][t]-counts['b'][t];i++) wHTML+='<img src="'+getPieceImage(pieceThemeStyle, 'b'+t.toUpperCase())+'">';
+        for(var i=0;i<starts['w'][t]-counts['w'][t];i++) bHTML+='<img src="'+getPieceImage(pieceThemeStyle, 'w'+t.toUpperCase())+'">';
     });
     if (sW>sB) wHTML+='<span class="advantage">+'+(sW-sB)+'</span>'; else if(sB>sW) bHTML+='<span class="advantage">+'+(sB-sW)+'</span>';
     $('#capturedByWhite').html(wHTML); $('#capturedByBlack').html(bHTML);
@@ -338,7 +369,7 @@ function onDrop(source, target) {
     var piece = game.get(source);
     if (piece && piece.type==='p' && (target.charAt(1)==='8'||target.charAt(1)==='1')) {
         pendingPromotionMove = { source: source, target: target };
-        $('.promo-piece').each(function() { $(this).attr('src','https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/'+piece.color+$(this).data('piece').toUpperCase()+'.png'); });
+        $('.promo-piece').each(function() { $(this).attr('src', getPieceImage(pieceThemeStyle, piece.color+$(this).data('piece').toUpperCase() ) ); });
         $('#promotionMenu').css('display','flex'); return 'snapback';
     }
     var move = game.move({ from: source, to: target, promotion: 'q' });
@@ -387,7 +418,7 @@ function executeClickMove(from, to) {
     var piece = game.get(from);
     if (piece && piece.type==='p' && (to.charAt(1)==='8'||to.charAt(1)==='1')) {
         pendingPromotionMove = { source: from, target: to };
-        $('.promo-piece').each(function() { $(this).attr('src','https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/'+piece.color+$(this).data('piece').toUpperCase()+'.png'); });
+        $('.promo-piece').each(function() { $(this).attr('src', getPieceImage(pieceThemeStyle, piece.color+$(this).data('piece').toUpperCase() ) ); });
         $('#promotionMenu').css('display','flex');
         return;
     }
@@ -402,7 +433,7 @@ function executeClickMove(from, to) {
 }
 
 
-// ── TAP-TO-MOVE: capture phase fires before chessboard.js ────
+// ── TAP-TO-MOVE: capture phase, fires before chessboard.js ────
 var _touchStartX=0, _touchStartY=0, _touchMoved=false;
 document.addEventListener('touchstart', function(e) {
     var el = document.getElementById('myBoard');
@@ -493,7 +524,7 @@ function syncSettingsModal() {
     if (typeof pieceThemeStyle !== 'undefined') $('#pieceSelect').val(pieceThemeStyle);
     if (typeof currentSoundTheme !== 'undefined') $('#soundThemeSelect').val(currentSoundTheme);
     // Detect the active board-theme class so the Board Theme dropdown is correct
-    var themeClasses = ['classic','green','blue','monochrome','coral'];
+    var themeClasses = ['classic','green','blue','monochrome','coral','purple','wood','ocean','tournament','walnut','maple','marble','icysea','slate','olive','sandcastle','bismuth','rosewood','charcoal'];
     for (var i=0; i<themeClasses.length; i++) {
         if ($('#myBoard').hasClass('theme-'+themeClasses[i])) {
             $('#themeSelect').val(themeClasses[i]); break;
@@ -521,10 +552,10 @@ $('#saveSettingsBtn').on('click', function() {
 
     // Apply board theme to ALL boards (play, puzzle, analyze)
     var themeClass = 'theme-' + $('#themeSelect').val();
-    var themeReset = 'theme-classic theme-green theme-blue theme-monochrome theme-coral';
+    var themeReset = 'theme-classic theme-green theme-blue theme-monochrome theme-coral theme-purple theme-wood theme-ocean theme-tournament theme-walnut theme-maple theme-marble theme-icysea theme-slate theme-olive theme-sandcastle theme-bismuth theme-rosewood theme-charcoal';
     $('#myBoard, #puzzleBoard, #analysisBoard').removeClass(themeReset).addClass(themeClass);
 
-    var newPieceURL = 'https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/{piece}.png';
+    var newPieceURL = getPieceTheme(pieceThemeStyle);
 
     // Detect which overlay is currently active so we know what to restart
     var puzzleOpen = $('#puzzleOverlay').hasClass('open');
@@ -689,7 +720,7 @@ function restartGame() {
 }
 
 var config = {
-    pieceTheme: 'https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/{piece}.png',
+    pieceTheme: getPieceTheme(pieceThemeStyle),
     draggable: !isTouchDevice, position: 'start',
     onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: onSnapEnd,
     moveSpeed: 200, snapbackSpeed: 100, snapSpeed: 80,
@@ -854,7 +885,7 @@ function _buildAndRunAnalysis(prebuiltHistory) {
     analysisBestSAN=new Array(analysisHistory.length).fill(null);
     analysisAnnotations=new Array(analysisHistory.length).fill('');
     analysisPieceTheme=pieceThemeStyle;
-    var aCfg={ pieceTheme:'https://chessboardjs.com/img/chesspieces/'+analysisPieceTheme+'/{piece}.png', draggable:false, position:'start' };
+    var aCfg={ pieceTheme: getPieceTheme(analysisPieceTheme), draggable:false, position:'start' };
     if (analysisBoard) { analysisBoard.destroy(); }
     analysisBoard=Chessboard('analysisBoard', aCfg);
     $(window).resize(analysisBoard.resize);
@@ -1246,7 +1277,7 @@ $('#analyzePgnBtn').on('click', function() {
     $('#analysisStatus').text((result.headers.Event?result.headers.Event+' ':'')+(result.headers.Date||'')||'PGN Game');
     analysisPieceTheme=pieceThemeStyle;
     if (analysisBoard) { analysisBoard.destroy(); }
-    analysisBoard=Chessboard('analysisBoard',{pieceTheme:'https://chessboardjs.com/img/chesspieces/'+analysisPieceTheme+'/{piece}.png',draggable:false,position:'start'});
+    analysisBoard=Chessboard('analysisBoard',{pieceTheme: getPieceTheme(analysisPieceTheme),draggable:false,position:'start'});
     $(window).resize(analysisBoard.resize);
     analysisMoveIndex=analysisHistory.length-1;
     showPerspectivePicker(white, black, function() {
@@ -1340,7 +1371,7 @@ function closePuzzleCleanup() { $('#puzzleHintArrow').remove(); puzzleState='idl
 function initPuzzleBoard() {
     if (puzzleBoard) { puzzleBoard.destroy(); }
     puzzleBoard=Chessboard('puzzleBoard',{
-        pieceTheme:'https://chessboardjs.com/img/chesspieces/'+pieceThemeStyle+'/{piece}.png',
+        pieceTheme: getPieceTheme(pieceThemeStyle),
         draggable:true, position:'start',
         onDragStart:onPuzzleDragStart, onDrop:onPuzzleDrop, onSnapEnd:onPuzzleSnapEnd
     });
