@@ -155,6 +155,45 @@ $(document).on('click', function() { $('#openingPopup').fadeOut(150); });
 // --- CORE UI LOGIC ---
 function formatTime(seconds) { var m = Math.floor(seconds/60); var s = seconds%60; return m+':'+(s<10?'0':'')+s; }
 
+function updateTimerUI() {
+    if (gameMode !== 'pvp') return;
+    $('#timerWhite').text(formatTime(timeWhite));
+    $('#timerBlack').text(formatTime(timeBlack));
+    // Active highlight: current player's timer glows
+    if (game.turn() === 'w') {
+        $('#timerWhite').addClass('active'); $('#timerBlack').removeClass('active');
+    } else {
+        $('#timerBlack').addClass('active'); $('#timerWhite').removeClass('active');
+    }
+}
+
+function startTimer() {
+    if (gameMode !== 'pvp') return;
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function() {
+        if (!gameStarted || game.game_over()) { clearInterval(timerInterval); return; }
+        if (game.turn() === 'w') {
+            timeWhite--;
+            if (timeWhite <= 0) { timeWhite = 0; clearInterval(timerInterval); timeOutWin('Black'); }
+        } else {
+            timeBlack--;
+            if (timeBlack <= 0) { timeBlack = 0; clearInterval(timerInterval); timeOutWin('White'); }
+        }
+        updateTimerUI();
+    }, 1000);
+}
+
+function showTimers() {
+    if (gameMode === 'pvp') {
+        $('#timerWhite').show();
+        $('#timerBlack').show();
+    } else {
+        $('#timerWhite').hide();
+        $('#timerBlack').hide();
+    }
+}
+
+
 function updateHistoryUI() {
     var history = game.history(); var html = '';
     for (var i = 0; i < history.length; i += 2) {
@@ -294,7 +333,8 @@ function onDrop(source, target) {
             setTimeout(function() { $piece.removeClass('piece-land'); }, 200);
         }, 50);
     })(move.to);
-    if (!gameStarted) { gameStarted=true; }
+    if (!gameStarted) { gameStarted=true; startTimer(); }
+    updateTimerUI();
     updateHistoryUI(); updateCapturedPieces(); updateStatus();
     if (gameMode==='pve') window.setTimeout(makeComputerMove, 250);
 }
@@ -339,7 +379,8 @@ function executeClickMove(from, to) {
     board.position(game.fen());
     highlightLastMove(move.from, move.to);
     playMoveSound(move);
-    if (!gameStarted) { gameStarted=true; }
+    if (!gameStarted) { gameStarted=true; startTimer(); }
+    updateTimerUI();
     updateHistoryUI(); updateCapturedPieces(); updateStatus();
     if (gameMode==='pve') window.setTimeout(makeComputerMove, 250);
 }
@@ -418,7 +459,8 @@ $('.promo-piece').on('click', function() {
     if (pendingPromotionMove) {
         var move = game.move({ from: pendingPromotionMove.source, to: pendingPromotionMove.target, promotion: $(this).data('piece') });
         pendingPromotionMove=null; board.position(game.fen()); highlightLastMove(move.from,move.to); playMoveSound(move);
-        if (!gameStarted) { gameStarted=true; }
+        if (!gameStarted) { gameStarted=true; startTimer(); }
+        updateTimerUI();
         updateHistoryUI(); updateCapturedPieces(); updateStatus();
         if (gameMode==='pve') window.setTimeout(makeComputerMove, 250);
     }
@@ -525,6 +567,8 @@ $('#saveSettingsBtn').on('click', function() {
     // the hidden game and surprise the user when they return to it.
     if (!puzzleOpen && !analysisOpen) {
         restartGame();
+    } else {
+        showTimers();
     }
 
     $('#settingsModal').css('display','none');
@@ -600,6 +644,7 @@ $('#copyPgnBtn').on('click', function() {
 function restartGame() {
     game.reset(); board.start(); clearInterval(timerInterval);
     timeWhite=timeControl; timeBlack=timeControl; gameStarted=false;
+    showTimers(); updateTimerUI();
     aiColor = (board.orientation()==='white') ? 'b' : 'w';
 
     $('#aiThinkingLoader').hide();
