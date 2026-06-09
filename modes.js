@@ -452,6 +452,7 @@ var puzzleBoard=null, puzzleGame=new Chess();
 var puzzleStats={ attempted:0, solved:0, failed:0, streak:0, bestStreak:0 };
 var currentPuzzle=null, puzzleMoveIndex=0, puzzleState='idle';
 var puzzleDifficulty='medium', puzzlePlayerColor='w', puzzleHintUsed=false;
+var puzzleStartTime=0;
 function getRandomPuzzle(difficulty) { var pool=PUZZLE_DB[difficulty]||PUZZLE_DB.medium; return pool[Math.floor(Math.random()*pool.length)]; }
 
 function openPuzzles() {
@@ -475,6 +476,7 @@ function initPuzzleBoard() {
 function loadNewPuzzle() {
     var pz=getRandomPuzzle(puzzleDifficulty);
     currentPuzzle=pz; puzzleMoveIndex=0; puzzleState='playing'; puzzleHintUsed=false;
+    puzzleStartTime=Date.now();
     puzzleGame.load(pz.fen); puzzlePlayerColor=puzzleGame.turn();
     puzzleBoard.orientation(puzzlePlayerColor==='w'?'white':'black');
     puzzleBoard.position(pz.fen,false);

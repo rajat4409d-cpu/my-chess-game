@@ -138,8 +138,49 @@ hard: [
 ]
 };
 
+// =============================================================================
+// MERGE EXTERNAL PUZZLE DATABASES
+// Load additional puzzles from external files without breaking existing ones.
+// =============================================================================
+(function mergePuzzleDatabases() {
+    var sources = [
+        { name: 'STARTER_PUZZLES', obj: typeof STARTER_PUZZLES !== 'undefined' ? STARTER_PUZZLES : null },
+        { name: 'LICHESS_PUZZLES', obj: typeof LICHESS_PUZZLES !== 'undefined' ? LICHESS_PUZZLES : null },
+    ];
+
+    ['easy', 'medium', 'hard'].forEach(function(diff) {
+        var originalCount = PUZZLE_DB[diff] ? PUZZLE_DB[diff].length : 0;
+
+        sources.forEach(function(src) {
+            if (src.obj && src.obj[diff] && Array.isArray(src.obj[diff])) {
+                var existingFens = {};
+                if (PUZZLE_DB[diff]) {
+                    PUZZLE_DB[diff].forEach(function(p) { existingFens[p.fen] = true; });
+                }
+
+                src.obj[diff].forEach(function(puzzle) {
+                    if (puzzle && puzzle.fen && !existingFens[puzzle.fen]) {
+                        existingFens[puzzle.fen] = true;
+                        PUZZLE_DB[diff].push(puzzle);
+                    }
+                });
+            }
+        });
+
+        if (PUZZLE_DB[diff]) {
+            console.log('[Puzzles] ' + diff + ': ' + originalCount + ' original + ' +
+                        (PUZZLE_DB[diff].length - originalCount) + ' external = ' +
+                        PUZZLE_DB[diff].length + ' total');
+        }
+    });
+
+    var total = (PUZZLE_DB.easy||[]).length + (PUZZLE_DB.medium||[]).length + (PUZZLE_DB.hard||[]).length;
+    console.log('[Puzzles] Total available: ' + total);
+})();
+
 // --- ACHIEVEMENT DEFINITIONS ---
 var ACHIEVEMENTS = [
+    // --- PLAY ACHIEVEMENTS ---
     { id:'first_blood',    icon:'<i class="ph ph-star"></i>',          name:'First Move',     desc:'Play your first game',       check:function(s){return s.played>=1;} },
     { id:'winner',         icon:'<i class="ph ph-trophy"></i>',         name:'Winner!',        desc:'Win your first game',        check:function(s){return s.wins>=1;} },
     { id:'hat_trick',      icon:'<i class="ph ph-crown"></i>',          name:'Hat Trick',      desc:'Win 3 games in a row',       check:function(s){return s.bestStreak>=3;} },
@@ -155,7 +196,21 @@ var ACHIEVEMENTS = [
     }},
     { id:'dominator',      icon:'<i class="ph ph-fire"></i>',           name:'Dominator',      desc:'Win 5 games',                check:function(s){return s.wins>=5;} },
     { id:'analyst',        icon:'<i class="ph ph-chart-line-up"></i>',  name:'Analyst',        desc:'Analyze a completed game',   check:function(s){return s.analyzed>=1;} },
-    { id:'puzzle_starter', icon:'<i class="ph ph-puzzle-piece"></i>',   name:'Puzzle Starter', desc:'Solve your first puzzle',    check:function(s){return (puzzleStats.solved||0)>=1;} },
-    { id:'puzzle_master',  icon:'<i class="ph ph-graduation-cap"></i>', name:'Puzzle Master',  desc:'Solve 10 puzzles',           check:function(s){return (puzzleStats.solved||0)>=10;} },
-    { id:'puzzle_streak',  icon:'<i class="ph ph-lightning"></i>',      name:'On Fire',        desc:'5 puzzles in a row',         check:function(s){return (puzzleStats.bestStreak||0)>=5;} },
+
+    // --- PUZZLE ACHIEVEMENTS ---
+    { id:'puzzle_starter',    icon:'<i class="ph ph-puzzle-piece"></i>',       name:'Puzzle Starter',    desc:'Solve your first puzzle',              check:function(s){return (s.puzzleSolved||0)>=1;} },
+    { id:'puzzle_grinder',    icon:'<i class="ph ph-target"></i>',             name:'Puzzle Grinder',  desc:'Solve 50 puzzles',                     check:function(s){return (s.puzzleSolved||0)>=50;} },
+    { id:'puzzle_addict',     icon:'<i class="ph ph-brain"></i>',              name:'Puzzle Addict',   desc:'Solve 250 puzzles',                    check:function(s){return (s.puzzleSolved||0)>=250;} },
+    { id:'puzzle_master',     icon:'<i class="ph ph-graduation-cap"></i>',      name:'Puzzle Master',   desc:'Solve 10 puzzles',                     check:function(s){return (s.puzzleSolved||0)>=10;} },
+    { id:'puzzle_warrior',    icon:'<i class="ph ph-sword"></i>',              name:'Puzzle Warrior',  desc:'Solve 100 puzzles',                    check:function(s){return (s.puzzleSolved||0)>=100;} },
+    { id:'puzzle_streak_5',   icon:'<i class="ph ph-lightning"></i>',          name:'On Fire',         desc:'5 puzzles solved in a row',            check:function(s){return (s.puzzleBestStreak||0)>=5;} },
+    { id:'puzzle_streak_10',  icon:'<i class="ph ph-lightning-slash"></i>',    name:'Unstoppable',     desc:'10 puzzles solved in a row',           check:function(s){return (s.puzzleBestStreak||0)>=10;} },
+    { id:'puzzle_streak_25',  icon:'<i class="ph ph-fire"></i>',               name:'Godlike',         desc:'25 puzzles solved in a row',           check:function(s){return (s.puzzleBestStreak||0)>=25;} },
+    { id:'puzzle_speedy',     icon:'<i class="ph ph-lightning"></i>',          name:'Speed Demon',     desc:'Solve a puzzle in under 5 seconds',    check:function(s){return (s.puzzleFastSolve||0)>=1;} },
+    { id:'puzzle_hintless',   icon:'<i class="ph ph-eye-slash"></i>',          name:'No Hints Needed', desc:'Solve 20 puzzles without using hints', check:function(s){return (s.puzzleHintless||0)>=20;} },
+    { id:'puzzle_hardcore',   icon:'<i class="ph ph-skull"></i>',              name:'Hardcore',        desc:'Solve a hard puzzle',                  check:function(s){return (s.puzzleHardSolved||0)>=1;} },
+    { id:'puzzle_elite',      icon:'<i class="ph ph-star-half"></i>',          name:'Elite Solver',    desc:'Solve a puzzle rated 2000+',           check:function(s){return (s.puzzleEliteSolved||0)>=1;} },
+    { id:'puzzle_theme_collector', icon:'<i class="ph ph-paint-brush"></i>', name:'Theme Collector', desc:'Solve puzzles from 10 unique themes',  check:function(s){return (s.puzzleThemes&&Object.keys(s.puzzleThemes).length>=10);} },
+    { id:'puzzle_perfect',    icon:'<i class="ph ph-check-circle"></i>',       name:'Perfect Session', desc:'Solve 10 puzzles in a row without failing', check:function(s){return (s.puzzlePerfectSession||0)>=10;} },
+    { id:'puzzle_night_owl',  icon:'<i class="ph ph-moon-stars"></i>',         name:'Night Owl',       desc:'Solve 5 puzzles after midnight',       check:function(s){return (s.puzzleNightSolves||0)>=5;} },
 ];
