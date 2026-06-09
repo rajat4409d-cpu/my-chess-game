@@ -624,7 +624,7 @@ $('#downloadPgnBtn').on('click', function() {
     var blob = new Blob([pgnData], { type: 'text/plain' });
     var url = window.URL.createObjectURL(blob);
     var a = document.createElement('a');
-    a.href = url; a.download = 'ChessEngine_Match.pgn';
+    a.href = url; a.download = 'Backrank Chess_Match.pgn';
     document.body.appendChild(a); a.click();
     document.body.removeChild(a); window.URL.revokeObjectURL(url);
 });
