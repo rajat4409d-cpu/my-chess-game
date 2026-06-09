@@ -11,6 +11,9 @@ var analysisEvals      = [];
 var analysisBestUCI    = [];
 var analysisBestSAN    = [];
 var analysisAnnotations= [];
+var analysisDepths     = [];
+var analysisWinLoss    = [];
+var analysisMoveAccuracy = [];
 var analysisWorker     = null;
 var analysisPerspective = 'both';
 var _pendingAnalysisCallback = null;
@@ -18,6 +21,29 @@ var _pendingAnalysisCallback = null;
 function createAnalysisWorker() {
     var blob = new Blob(["importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');"], { type:'application/javascript' });
     return new Worker(URL.createObjectURL(blob));
+}
+
+function resetAnalysisComputedData() {
+    analysisEvals=new Array(analysisHistory.length).fill(null);
+    analysisBestUCI=new Array(analysisHistory.length).fill(null);
+    analysisBestSAN=new Array(analysisHistory.length).fill(null);
+    analysisAnnotations=new Array(analysisHistory.length).fill('');
+    analysisDepths=new Array(analysisHistory.length).fill(null);
+    analysisWinLoss=new Array(analysisHistory.length).fill(null);
+    analysisMoveAccuracy=new Array(analysisHistory.length).fill(null);
+}
+
+function ensureAnalysisInfoPanel() {
+    if ($('#analysisAccuracySummary').length) return;
+    var html=''+
+        '<div id="analysisAccuracySummary" style="margin:10px 18px 4px;padding:10px 12px;border-radius:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.18);font-size:12px;color:#94a3b8;">'+
+        '  <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;">'+
+        '    <span>White accuracy: <strong id="analysisWhiteAccuracy" style="color:#f8fafc;">—</strong></span>'+
+        '    <span>Black accuracy: <strong id="analysisBlackAccuracy" style="color:#f8fafc;">—</strong></span>'+
+        '  </div>'+ 
+        '  <div style="font-size:11px;color:#64748b;">Local Stockfish review — labels are approximate.</div>'+ 
+        '</div>';
+    $('#analysisEvalSummary').after(html);
 }
 
 function drawBestMoveArrow(uci) {
@@ -111,10 +137,7 @@ function _buildAndRunAnalysis(prebuiltHistory) {
             analysisHistory.push({ fen: tempGame.fen(), san: m.san, from: m.from, to: m.to, uci: m.from+m.to+(m.promotion||'') });
         });
     } else { analysisHistory=prebuiltHistory; }
-    analysisEvals=new Array(analysisHistory.length).fill(null);
-    analysisBestUCI=new Array(analysisHistory.length).fill(null);
-    analysisBestSAN=new Array(analysisHistory.length).fill(null);
-    analysisAnnotations=new Array(analysisHistory.length).fill('');
+    resetAnalysisComputedData();
     analysisPieceTheme=pieceThemeStyle;
     var aCfg={ pieceTheme: getPieceTheme(analysisPieceTheme), draggable:false, position:'start' };
     if (analysisBoard) { analysisBoard.destroy(); }
@@ -136,6 +159,7 @@ function closeAnalysis() {
 }
 
 function renderAnalysisPosition() {
+    ensureAnalysisInfoPanel();
     var pos=analysisHistory[analysisMoveIndex];
     analysisGame.load(pos.fen); analysisBoard.position(pos.fen,false);
     $('#analysisBoard .square-55d63').removeClass('highlight-move');
@@ -151,7 +175,7 @@ function renderAnalysisPosition() {
         var fill=Math.max(0,Math.min(100,50+ev/12));
         $('#analysisEvalFill').css('height',fill+'%');
         var disp=Math.abs(ev)>=9000?(ev>0?'+M':'-M'):(ev>=0?'+':'')+(ev/100).toFixed(1);
-        $('#evalScoreBox').text(disp); $('#evalDepth').text('Depth 18');
+        $('#evalScoreBox').text(disp); $('#evalDepth').text(analysisDepths[analysisMoveIndex] ? 'Depth ' + analysisDepths[analysisMoveIndex] : 'Depth —');
     } else { $('#evalScoreBox').text('\u2014'); $('#evalDepth').text('Analyzing...'); }
     var bestUCI=analysisBestUCI[analysisMoveIndex];
     $('#evalBestMove').text(analysisBestSAN[analysisMoveIndex]?'Best: '+analysisBestSAN[analysisMoveIndex]:'Best: \u2014');
@@ -189,6 +213,7 @@ function renderAnalysisMoveList() {
     $('#cntMistake').text(counts.mistake); $('#cntBlunder').text(counts.blunder);
     var perspLabel=analysisPerspective==='white'?' (White)':analysisPerspective==='black'?' (Black)':'';
     $('#analysisAccuracyRow').attr('title','Move ratings'+perspLabel);
+    updateAnalysisAccuracySummary();
     var html='';
     for (var i=1;i<analysisHistory.length;i+=2) {
         var wMove=analysisHistory[i], bMove=analysisHistory[i+1]||null, mn=Math.ceil(i/2);
@@ -224,16 +249,48 @@ function getAnnMeta(ann) { return ANN_META[ann]||{cls:'',sym:ann,label:''}; }
 function getAnnClass(ann) { return getAnnMeta(ann).cls; }
 function getAnnSym(ann)   { return getAnnMeta(ann).sym; }
 
-function capEval(v) { if(v>=9000)return 1000; if(v<=-9000)return-1000; return Math.max(-1000,Math.min(1000,v)); }
+// Keep mate scores finite for the review maths.  All engine scores in
+// analysisEvals are stored from White's point of view.
+function capEval(v) {
+    if (v === null || typeof v === 'undefined' || isNaN(v)) return 0;
+    if (v >= 9000) return 1000;
+    if (v <= -9000) return -1000;
+    return Math.max(-1000, Math.min(1000, v));
+}
+
+// Convert a centipawn score (White POV) to White's winning chances.
+// This is much closer to how Chess.com / Lichess style reviews judge move
+// quality than raw centipawn loss, especially when one side is already winning.
+function winChanceFromCp(cp) {
+    cp = capEval(cp);
+    return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * cp)) - 1);
+}
+
+function stripSanForBook(san) {
+    return (san || '')
+        .replace(/[+#]+$/g, '')      // check / mate marks
+        .replace(/[!?]+$/g, '')      // annotations that may be present in PGNs
+        .trim();
+}
 
 var BOOK_POSITIONS=(function(){
     var book={};
-    var lines=[['e2e4','e7e5'],['e2e4','c7c5'],['e2e4','e7e6'],['e2e4','c7c6'],['d2d4','d7d5'],['d2d4','g8f6'],['g1f3','d7d5'],['c2c4','e7e5'],['g1f3','g8f6'],['c2c4','c7c5']];
+    // Fallback mini opening book by UCI positions.  The main book check below
+    // uses the larger openingBook table from data.js, but these common replies
+    // make early book detection work even if the SAN table is unavailable.
+    var lines=[
+        ['e2e4','e7e5','g1f3','b8c6'], ['e2e4','c7c5'], ['e2e4','e7e6'],
+        ['e2e4','c7c6'], ['e2e4','d7d6'], ['d2d4','d7d5'], ['d2d4','g8f6'],
+        ['g1f3','d7d5'], ['g1f3','g8f6'], ['c2c4','e7e5'], ['c2c4','c7c5']
+    ];
     var Chess2=typeof Chess!=='undefined'?Chess:null;
     if (Chess2) {
         lines.forEach(function(line) {
             var g=new Chess2();
-            line.forEach(function(uci) { g.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||undefined}); book[g.fen().split(' ').slice(0,4).join(' ')]=true; });
+            line.forEach(function(uci) {
+                g.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||undefined});
+                book[g.fen().split(' ').slice(0,4).join(' ')]=true;
+            });
         });
     }
     return book;
@@ -247,30 +304,125 @@ function isBookMove(fenBefore, uci) {
     } catch(e) { return false; }
 }
 
+function isBookMoveAtIndex(moveIdx) {
+    if (moveIdx <= 0 || moveIdx > 24) return false; // don't call late middlegame moves book
+
+    // Prefer the SAN opening table in data.js.  A played line is book while it
+    // is a prefix of any known opening line (e.g. 1.e4 is book even before ...e5).
+    try {
+        if (typeof openingBook !== 'undefined' && openingBook) {
+            var played = analysisHistory.slice(1, moveIdx + 1)
+                .map(function(h){ return stripSanForBook(h.san); })
+                .join(',');
+            var keys = Object.keys(openingBook);
+            for (var k=0; k<keys.length; k++) {
+                var bookLine = keys[k].split(',').map(stripSanForBook).join(',');
+                if (bookLine === played || bookLine.indexOf(played + ',') === 0) return true;
+            }
+        }
+    } catch(e) {}
+
+    // Fallback to UCI/FEN book.
+    return isBookMove(analysisHistory[moveIdx-1].fen, analysisHistory[moveIdx].uci);
+}
+
+function materialScoreForSide(fen, side) {
+    var values={p:100,n:320,b:330,r:500,q:900,k:0};
+    try {
+        var g=new Chess(); g.load(fen);
+        var board=g.board(), score=0;
+        for (var r=0;r<8;r++) {
+            for (var c=0;c<8;c++) {
+                var pc=board[r][c];
+                if (!pc) continue;
+                var val=values[pc.type]||0;
+                score += (pc.color===side ? val : -val);
+            }
+        }
+        return score;
+    } catch(e) { return 0; }
+}
+
+function isPotentialBrilliant(moveIdx, winLoss, evalDropCp, playedBest) {
+    // Do not award brilliancies for normal opening/book or routine best moves.
+    if (!playedBest || isBookMoveAtIndex(moveIdx)) return false;
+    if (winLoss > 0.5 || evalDropCp > 0) return false;
+
+    var beforeFen=analysisHistory[moveIdx-1].fen, afterFen=analysisHistory[moveIdx].fen;
+    var side=(moveIdx%2===1)?'w':'b';
+    var materialBefore=materialScoreForSide(beforeFen, side);
+    var materialAfter=materialScoreForSide(afterFen, side);
+    var sacrificed = (materialAfter - materialBefore) <= -250; // at least a minor exchange/piece sac
+
+    var ebC=capEval(analysisEvals[moveIdx-1]);
+    var notAlreadyWinning=Math.abs(ebC) < 700;
+    return sacrificed && notAlreadyWinning;
+}
+
+function moveAccuracyFromWinLoss(loss) {
+    loss = Math.max(0, loss || 0);
+    return Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * loss) - 3.1669));
+}
+
+function calculatePlayerAccuracy(color) {
+    var total=0, count=0;
+    for (var i=1;i<analysisHistory.length;i++) {
+        var isWhiteMove=(i%2===1);
+        if ((color==='white'&&!isWhiteMove) || (color==='black'&&isWhiteMove)) continue;
+        var acc=analysisMoveAccuracy[i];
+        if (acc===null || typeof acc==='undefined' || isNaN(acc)) continue;
+        total+=acc; count++;
+    }
+    return count ? total/count : null;
+}
+
+function updateAnalysisAccuracySummary() {
+    ensureAnalysisInfoPanel();
+    var w=calculatePlayerAccuracy('white'), b=calculatePlayerAccuracy('black');
+    $('#analysisWhiteAccuracy').text(w===null?'—':Math.round(w)+'%');
+    $('#analysisBlackAccuracy').text(b===null?'—':Math.round(b)+'%');
+}
+
 function computeAnnotations() {
     for (var i=1;i<analysisHistory.length;i++) {
         var eb=analysisEvals[i-1], ea=analysisEvals[i];
         if (eb===null||ea===null) continue;
-        var ebC=capEval(eb), eaC=capEval(ea);
+
         var isWhiteMove=(i%2===1);
-        var evalDrop=isWhiteMove?(ebC-eaC):(eaC-ebC);
-        var playedUCI=analysisHistory[i].uci, bestUCI=analysisBestUCI[i-1];
-        var playedBest=!!(bestUCI&&playedUCI&&playedUCI===bestUCI);
-        if (playedBest) {
-            var positionIsDecided=(Math.abs(ebC)>700);
-            var legalMoveCount=(function(idx){ try{var tmp=new Chess();tmp.load(analysisHistory[idx].fen);return tmp.moves().length;}catch(e){return 99;} })(i-1);
-            if (!positionIsDecided&&legalMoveCount>1&&evalDrop<=0) { analysisAnnotations[i]='brilliant'; }
-            else { analysisAnnotations[i]='best'; }
+        var ebC=capEval(eb), eaC=capEval(ea);
+        var evalDropCp=isWhiteMove?(ebC-eaC):(eaC-ebC);
+
+        // Book must be checked before best-move matching.  Previously 1.e4 was
+        // marked as "Best" because Stockfish liked it, while Chess.com/Chessvia
+        // correctly mark it as "Book".
+        var beforeWin=winChanceFromCp(ebC), afterWin=winChanceFromCp(eaC);
+        var winLoss=isWhiteMove ? (beforeWin-afterWin) : (afterWin-beforeWin);
+        winLoss=Math.max(0, winLoss);
+        analysisWinLoss[i]=winLoss;
+        analysisMoveAccuracy[i]=moveAccuracyFromWinLoss(winLoss);
+
+        if (isBookMoveAtIndex(i)) {
+            analysisAnnotations[i]='book';
+            analysisMoveAccuracy[i]=100;
             continue;
         }
-        if (i<=10&&isBookMove(analysisHistory[i-1].fen,playedUCI)) { analysisAnnotations[i]='book'; continue; }
-        if      (evalDrop<=0)   { analysisAnnotations[i]='best'; }
-        else if (evalDrop<=10)  { analysisAnnotations[i]='excellent'; }
-        else if (evalDrop<=25)  { analysisAnnotations[i]='good'; }
-        else if (evalDrop<=60)  { analysisAnnotations[i]='inaccuracy'; }
-        else if (evalDrop<=150) { analysisAnnotations[i]='mistake'; }
-        else                    { analysisAnnotations[i]='blunder'; }
+
+        var playedUCI=analysisHistory[i].uci, bestUCI=analysisBestUCI[i-1];
+        var playedBest=!!(bestUCI&&playedUCI&&playedUCI===bestUCI);
+
+        if (isPotentialBrilliant(i, winLoss, evalDropCp, playedBest)) { analysisAnnotations[i]='brilliant'; analysisMoveAccuracy[i]=100; continue; }
+        if (playedBest || winLoss <= 0.5) { analysisAnnotations[i]='best'; continue; }
+
+        // Win-probability-loss thresholds.  These avoid the old bug where a
+        // harmless centipawn swing in an already won/lost position became a
+        // false blunder, producing review counts far away from real sites.
+        if      (winLoss <= 2.0)  { analysisAnnotations[i]='excellent'; }
+        else if (winLoss <= 5.0)  { analysisAnnotations[i]='good'; }
+        else if (winLoss <= 10.0) { analysisAnnotations[i]='inaccuracy'; }
+        else if (winLoss <= 20.0) { analysisAnnotations[i]='mistake'; }
+        else                      { analysisAnnotations[i]='blunder'; }
     }
+    updateAnalysisAccuracySummary();
 }
 
 function startFullAnalysis() {
@@ -287,7 +439,7 @@ function startFullAnalysis() {
         $('#analysisLoadingText').text('Analyzing position '+posNum+' of '+total+'...');
         lastCp=0; lastDepth=0;
         analysisWorker.postMessage('position fen '+analysisHistory[pendingIdx].fen);
-        analysisWorker.postMessage('go depth 20 movetime 1500');
+        analysisWorker.postMessage('go depth 18 movetime 1500');
     }
     analysisWorker.onmessage=function(e) {
         var line=e.data;
@@ -311,6 +463,7 @@ function startFullAnalysis() {
                 analysisBestSAN[pendingIdx]=mv?mv.san:uci;
             }
             analysisEvals[pendingIdx]=lastCp;
+            analysisDepths[pendingIdx]=lastDepth || null;
             if (pendingIdx===analysisMoveIndex) { renderAnalysisPosition(); }
             pendingIdx=null;
             computeAnnotations(); renderAnalysisMoveList(); evaluateNext();
@@ -408,10 +561,7 @@ $('#analyzePgnBtn').on('click', function() {
     var replayGame=new Chess();
     analysisHistory.push({fen:replayGame.fen(),san:null,from:null,to:null,uci:null});
     result.moves.forEach(function(m){replayGame.move({from:m.from,to:m.to,promotion:m.promotion||'q'});analysisHistory.push({fen:replayGame.fen(),san:m.san,from:m.from,to:m.to,uci:m.from+m.to+(m.promotion||'')});});
-    analysisEvals=new Array(analysisHistory.length).fill(null);
-    analysisBestUCI=new Array(analysisHistory.length).fill(null);
-    analysisBestSAN=new Array(analysisHistory.length).fill(null);
-    analysisAnnotations=new Array(analysisHistory.length).fill('');
+    resetAnalysisComputedData();
     var white=result.headers.White||'White', black=result.headers.Black||'Black';
     $('#analysisWhiteLabel').text(white); $('#analysisBlackLabel').text(black);
     $('#analysisStatus').text((result.headers.Event?result.headers.Event+' ':'')+(result.headers.Date||'')||'PGN Game');
