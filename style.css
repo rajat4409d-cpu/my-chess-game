@@ -1324,3 +1324,419 @@ body { overflow-x: hidden; }
 
 @keyframes pieceLand { 0%{transform:scale(1.15)} 60%{transform:scale(0.96)} 100%{transform:scale(1)} }
 .piece-land { animation: pieceLand 0.18s ease-out forwards; }
+/* ============================================================
+   ANALYZER UPGRADES — Evaluation graph, Retry overlay, Toast,
+   Clear-cache button. Added by analysis_upgrades.js. Self-
+   contained styles so light/dark themes both look clean.
+   ============================================================ */
+
+/* ---- Evaluation graph ---- */
+.analysis-eval-graph-container {
+    margin: 10px 12px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+body.light .analysis-eval-graph-container {
+    background: rgba(241, 245, 249, 0.85);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+.eval-graph-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #94a3b8;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+body.light .eval-graph-title { color: #475569; }
+#analysisEvalGraph {
+    width: 100%;
+    height: 120px;
+    display: block;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+/* ---- Retry Mistakes button on the panel ---- */
+#retryMistakesBtn {
+    width: calc(100% - 24px);
+    margin: 10px 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    color: #fff;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+#retryMistakesBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+#retryMistakesBtn .ph { margin-right: 4px; }
+
+/* ---- Clear cache button next to Load PGN ---- */
+#clearAnalysisCacheBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ---- Retry Mistakes overlay ---- */
+.retry-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: rgba(2, 6, 23, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.retry-overlay.open { display: flex; }
+.retry-content {
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 16px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    width: 100%;
+    max-width: 440px;
+    padding: 18px;
+    max-height: 92vh;
+    overflow-y: auto;
+}
+body.light .retry-content {
+    background: #ffffff;
+    color: #0f172a;
+    border-color: rgba(15, 23, 42, 0.08);
+}
+.retry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.retry-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+#closeRetryBtn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.7;
+    padding: 0 6px;
+}
+#closeRetryBtn:hover { opacity: 1; }
+.retry-progress {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+body.light .retry-progress { color: #64748b; }
+#retryStatus {
+    font-size: 14px;
+    margin: 6px 0 10px;
+    min-height: 22px;
+}
+#retryBoardWrap {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto 10px;
+}
+#retryBoard { width: 100%; }
+#retryExplanation {
+    font-size: 12px;
+    color: #94a3b8;
+    min-height: 18px;
+    margin-bottom: 10px;
+}
+body.light #retryExplanation { color: #475569; }
+.retry-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.retry-actions .btn-outline,
+.retry-actions .btn-primary {
+    flex: 1 1 30%;
+    min-width: 100px;
+    justify-content: center;
+}
+
+/* ---- Hint highlight reused in retry board ---- */
+#retryBoard .puzzle-hint {
+    box-shadow: inset 0 0 0 4px rgba(14, 165, 233, 0.7) !important;
+}
+
+/* ---- Toast ---- */
+.br-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(15, 23, 42, 0.95);
+    color: #f1f5f9;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 10000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.br-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+body.light .br-toast {
+    background: #0f172a;
+    color: #f1f5f9;
+}
+
+/* ============================================================
+   ANALYZE PAGE POLISH — tighten alignment, fix header wrap,
+   compact accuracy row, ensure board area sits flush.
+   ============================================================ */
+
+/* ---- Right panel header: single tidy row ---- */
+.analysis-panel-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px;
+    padding: 12px 14px !important;
+}
+.analysis-panel-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+}
+.analysis-panel-title-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+.analysis-panel-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.analysis-panel-title .ph { font-size: 16px; color: #34d399; }
+.analysis-move-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #cbd5e1 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    background: rgba(148, 163, 184, 0.16);
+    padding: 4px 9px;
+    border-radius: 999px;
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+}
+body.light .analysis-move-label { color: #475569 !important; background: rgba(15, 23, 42, 0.06); }
+
+.analysis-panel-header-actions {
+    display: flex;
+    gap: 6px;
+    flex: 0 0 auto;
+    align-items: center;
+}
+.analysis-icon-btn,
+.analysis-panel-header-actions #clearAnalysisCacheBtn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(148, 163, 184, 0.10) !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    color: #cbd5e1 !important;
+    cursor: pointer;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 15px !important;
+    font-weight: normal !important;
+    line-height: 1 !important;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.analysis-icon-btn:hover,
+.analysis-panel-header-actions #clearAnalysisCacheBtn:hover {
+    background: rgba(148, 163, 184, 0.20) !important;
+    color: #f8fafc !important;
+}
+.analysis-icon-btn .ph,
+.analysis-panel-header-actions #clearAnalysisCacheBtn .ph {
+    margin: 0 !important;
+    font-size: 16px !important;
+}
+/* Hide any plain text inside the cache button — it should be icon-only now. */
+.analysis-panel-header-actions #clearAnalysisCacheBtn {
+    font-size: 0 !important;
+}
+.analysis-panel-header-actions #clearAnalysisCacheBtn .ph {
+    font-size: 16px !important;
+}
+body.light .analysis-icon-btn,
+body.light .analysis-panel-header-actions #clearAnalysisCacheBtn {
+    background: rgba(15, 23, 42, 0.04) !important;
+    border-color: rgba(15, 23, 42, 0.10) !important;
+    color: #334155 !important;
+}
+body.light .analysis-icon-btn:hover,
+body.light .analysis-panel-header-actions #clearAnalysisCacheBtn:hover {
+    background: rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+}
+
+/* ---- Tighten the board area top so the board sits closer to status ---- */
+.analysis-board-area {
+    padding: 14px 24px 18px !important;
+    gap: 0;
+}
+#analysisStatus {
+    font-size: 18px !important;
+    font-weight: 700;
+    margin-bottom: 6px !important;
+    text-align: center;
+    width: 100%;
+}
+.analysis-opening-badge {
+    margin-bottom: 8px !important;
+    min-height: 0 !important;
+}
+.analysis-opening-badge:empty { display: none; }
+#analysisBoardContainer { margin: 4px 0 8px !important; }
+.analysis-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    margin: 4px 0;
+    background: rgba(148, 163, 184, 0.06);
+    border-radius: 8px;
+    width: 580px !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+body.light .analysis-label { background: rgba(15, 23, 42, 0.04); }
+
+/* ---- Accuracy row: tighter, 4-cols, consistent height ---- */
+.analysis-accuracy-row {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+}
+.acc-block {
+    padding: 8px 4px !important;
+    gap: 3px !important;
+    min-height: 58px;
+    justify-content: center;
+}
+.acc-block .acc-icon { font-size: 14px !important; }
+.acc-block span:nth-child(2) { font-size: 18px !important; }
+.acc-block .acc-label { font-size: 9.5px !important; letter-spacing: 0.02em; }
+
+/* ---- Eval summary, slightly more breathing room + alignment ---- */
+.analysis-eval-summary {
+    padding: 14px 16px !important;
+    gap: 6px !important;
+}
+.eval-score-box { line-height: 1.1; }
+.eval-best-move, .eval-depth { line-height: 1.2; }
+
+/* ---- Move list: a touch more padding-room ---- */
+.analysis-history-list {
+    padding: 6px 10px !important;
+    min-height: 120px;
+    max-height: 240px;
+}
+.analysis-right-panel .section-title {
+    padding: 8px 14px 4px;
+    margin: 0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    font-weight: 800;
+}
+body.light .analysis-right-panel .section-title { color: #475569; }
+
+/* ---- Eval graph card: match the panel rhythm ---- */
+.analysis-eval-graph-container {
+    margin: 10px 14px !important;
+    padding: 12px !important;
+}
+
+/* ---- Retry button: align with panel padding ---- */
+#retryMistakesBtn {
+    width: calc(100% - 28px) !important;
+    margin: 8px 14px 10px !important;
+}
+
+/* ---- Nav buttons row: more even spacing ---- */
+.analysis-nav-buttons {
+    padding: 10px 14px !important;
+    gap: 6px !important;
+}
+.analysis-nav-buttons .btn-outline {
+    flex: 1;
+    max-width: none !important;
+    padding: 9px 0 !important;
+    font-size: 15px !important;
+}
+
+/* ---- Loading banner: align with new header rhythm ---- */
+#analysisLoadingBanner {
+    padding: 10px 16px !important;
+}
+
+/* ---- Right panel: make sure scroll happens INSIDE the panel, not the whole layout ---- */
+.analysis-right-panel {
+    overflow-y: auto !important;
+}
+
+/* ---- Mobile: keep header readable ---- */
+@media (max-width: 900px) {
+    .analysis-panel-header { padding: 10px 12px !important; }
+    .analysis-panel-title { font-size: 14px; }
+    .analysis-header-btn { font-size: 10px !important; padding: 6px 8px !important; }
+    .analysis-label { width: 100% !important; }
+}

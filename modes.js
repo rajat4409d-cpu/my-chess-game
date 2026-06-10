@@ -14,9 +14,16 @@ var analysisAnnotations= [];
 var analysisDepths     = [];
 var analysisWinLoss    = [];
 var analysisMoveAccuracy = [];
+var analysisTopMoves     = [];
+var analysisKeyMoments   = [];
+var analysisExplanations = [];
 var analysisWorker     = null;
 var analysisPerspective = 'both';
 var _pendingAnalysisCallback = null;
+
+var ANALYSIS_MULTIPV = 3;
+var ANALYSIS_DEPTH = 16;
+var ANALYSIS_MOVETIME = 1200;
 
 function createAnalysisWorker() {
     var blob = new Blob(["importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');"], { type:'application/javascript' });
@@ -31,6 +38,9 @@ function resetAnalysisComputedData() {
     analysisDepths=new Array(analysisHistory.length).fill(null);
     analysisWinLoss=new Array(analysisHistory.length).fill(null);
     analysisMoveAccuracy=new Array(analysisHistory.length).fill(null);
+    analysisTopMoves=new Array(analysisHistory.length).fill(null);
+    analysisExplanations=new Array(analysisHistory.length).fill('');
+    analysisKeyMoments = [];
 }
 
 function ensureAnalysisInfoPanel() {

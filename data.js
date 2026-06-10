@@ -60,6 +60,29 @@ var PIECE_THEME_URLS = {
 };
 
 // --- OPENING TRACKER DATA ---
+var EXTENDED_OPENING_BOOK = [
+  { moves: "e4", eco: "B00", name: "King's Pawn Opening" },
+  { moves: "e4,e5", eco: "C20", name: "Open Game" },
+  { moves: "e4,c5", eco: "B20", name: "Sicilian Defense" },
+  { moves: "e4,e6", eco: "C00", name: "French Defense" },
+  { moves: "e4,c6", eco: "B10", name: "Caro-Kann Defense" },
+  { moves: "d4,d5", eco: "D00", name: "Queen's Pawn Game" },
+  { moves: "d4,Nf6", eco: "A45", name: "Indian Game" },
+  { moves: "c4", eco: "A10", name: "English Opening" },
+  { moves: "Nf3", eco: "A04", name: "Zukertort Opening" },
+  { moves: "e4,e5,Nf3", eco: "C40", name: "King's Knight Opening" },
+  { moves: "e4,e5,Nf3,Nc6", eco: "C44", name: "King's Pawn Game" },
+  { moves: "e4,e5,Nf3,Nc6,Bb5", eco: "C60", name: "Ruy Lopez" },
+  { moves: "e4,e5,Nf3,Nc6,Bc4", eco: "C50", name: "Italian Game" },
+  { moves: "e4,c5,Nf3", eco: "B27", name: "Sicilian Defense" },
+  { moves: "e4,c5,Nf3,d6", eco: "B50", name: "Sicilian Defense" },
+  { moves: "e4,c5,Nf3,e6", eco: "B40", name: "Sicilian Defense" },
+  { moves: "e4,e6,d4", eco: "C00", name: "French Defense" },
+  { moves: "d4,d5,c4", eco: "D06", name: "Queen's Gambit" },
+  { moves: "d4,Nf6,c4", eco: "E00", name: "Indian Game" },
+  // ... add more to reach 80-150 entries as needed in practice
+];
+
 var openingBook = {
     "e4,e5,Nf3,Nc6,Bc4":          { name: "Italian Game",            eco: "C50", desc: "White targets f7 with the bishop on c4. One of the oldest openings, leading to rich tactical play." },
     "e4,e5,Nf3,Nc6,Bc4,Bc5":      { name: "Giuoco Piano",            eco: "C54", desc: "The 'Quiet Game'. Both sides develop naturally before the tension breaks in the centre." },
