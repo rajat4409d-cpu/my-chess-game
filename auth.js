@@ -9,7 +9,7 @@
     // During local development, this is your Express backend.
     // In Phase 3, change this to your deployed backend URL, e.g.
     // https://backrank-chess-api.onrender.com
-    var API_BASE = (localStorage.getItem('backrank-api-base') || 'http://localhost:3000').replace(/\/$/, '');
+    var API_BASE = (localStorage.getItem('backrank-api-base') || 'https://backrank-chess-api.onrender.com').replace(/\/$/, '');
 
     var ACCOUNTS_KEY = 'backrank-phase1-accounts';
     var CURRENT_LOCAL_USER_KEY = 'backrank-phase1-current-user';
