@@ -1,0 +1,17 @@
+# Backend / server stuff for later phases
+server/
+
+# Node packages
+node_modules/
+
+# Secret environment files
+.env
+server/.env
+
+# Local databases
+*.sqlite
+server/*.sqlite
+
+# OS/editor files
+.DS_Store
+.vscode/

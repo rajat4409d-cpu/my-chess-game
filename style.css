@@ -1740,3 +1740,193 @@ body.light .analysis-right-panel .section-title { color: #475569; }
     .analysis-header-btn { font-size: 10px !important; padding: 6px 8px !important; }
     .analysis-label { width: 100% !important; }
 }
+
+/* ============================================================
+   ACCOUNT / AUTH UI
+   ============================================================ */
+.account-nav-card {
+    margin-bottom: 14px;
+    padding: 10px;
+    border: 1px solid #2a2d35;
+    border-radius: 12px;
+    background: #14161c;
+}
+.account-open-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border: none;
+    background: #1f2128;
+    color: #d1d5db;
+    border-radius: 9px;
+    padding: 9px 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    transition: all 0.18s;
+}
+.account-open-btn:hover { background: #252830; transform: translateY(-1px); }
+.account-open-btn.signed-in { background: #0d2e23; color: #34d399; }
+.account-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(16,185,129,0.16);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.account-user-meta { margin-top: 7px; padding: 0 2px; }
+.account-user-name { font-size: 12px; font-weight: 800; color: #e5e7eb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-user-sub { font-size: 10px; color: #6b7280; margin-top: 2px; line-height: 1.25; }
+.account-mobile-btn {
+    width: 36px; height: 36px;
+    background: none; border: none; cursor: pointer;
+    padding: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #d1d5db; border-radius: 50%; transition: all 0.2s;
+}
+.account-mobile-btn:hover { background: #2a2d35; color: #34d399; }
+
+.auth-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.68);
+    backdrop-filter: blur(4px);
+    padding: 18px;
+    box-sizing: border-box;
+}
+.auth-modal.open { display: flex; }
+.auth-content {
+    width: 100%;
+    max-width: 410px;
+    background: #1f2128;
+    color: #e5e7eb;
+    border: 1px solid #2a2d35;
+    border-radius: 18px;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+    padding: 24px;
+    position: relative;
+    animation: authIn 0.22s ease-out;
+}
+@keyframes authIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.auth-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 26px;
+    cursor: pointer;
+    line-height: 1;
+}
+.auth-close:hover { color: #fff; }
+.auth-brand { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; padding-right: 28px; }
+.auth-brand > .ph { font-size: 34px; color: #10b981; }
+.auth-brand h2 { margin: 0; font-size: 21px; font-weight: 900; color: #e5e7eb; }
+.auth-brand p { margin: 3px 0 0; font-size: 13px; color: #9ca3af; }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.auth-tab {
+    border: 1px solid #2a2d35;
+    background: #14161c;
+    color: #9ca3af;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+}
+.auth-tab.active { background: #0d2e23; color: #34d399; border-color: #10b981; }
+.auth-form { display: none; flex-direction: column; gap: 12px; }
+.auth-form.active { display: flex; }
+.auth-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #9ca3af;
+}
+.auth-form input {
+    padding: 11px 12px;
+    border-radius: 9px;
+    border: 1px solid #2a2d35;
+    background: #14161c;
+    color: #e5e7eb;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    font-size: 14px;
+}
+.auth-form input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.16); }
+.optional { color: #6b7280; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.auth-submit { width: 100%; margin-top: 6px; min-height: 42px; justify-content: center; }
+.auth-submit.loading { opacity: .7; cursor: wait; }
+.auth-hint { margin-top: 12px; font-size: 11px; color: #6b7280; line-height: 1.55; }
+.signed-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid #2a2d35;
+    background: #14161c;
+    border-radius: 14px;
+    margin-bottom: 12px;
+}
+.signed-avatar { width: 48px; height: 48px; border-radius: 50%; display:flex; align-items:center; justify-content:center; background:#0d2e23; color:#34d399; font-size:30px; }
+.signed-card h3 { margin: 0; font-size: 18px; color: #e5e7eb; }
+.signed-card p { margin: 2px 0 0; color: #9ca3af; font-size: 12px; }
+.account-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(16px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 11000;
+    background: #111827;
+    color: #f9fafb;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 11px 16px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    font-size: 13px;
+    font-weight: 700;
+    transition: opacity .2s, transform .2s;
+    max-width: calc(100vw - 30px);
+    text-align: center;
+}
+.account-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.account-toast.success { border-color: rgba(16,185,129,.5); color: #bbf7d0; }
+.account-toast.error { border-color: rgba(239,68,68,.55); color: #fecaca; }
+
+body.light .account-nav-card { background: #f9fafb; border-color: #e5e7eb; }
+body.light .account-open-btn { background: #fff; color: #374151; border: 1px solid #e5e7eb; }
+body.light .account-open-btn:hover { background: #f3f4f6; }
+body.light .account-open-btn.signed-in { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+body.light .account-user-name { color: #111827; }
+body.light .account-mobile-btn { color: #374151; }
+body.light .auth-content { background: #fff; color: #111827; border-color: #e5e7eb; box-shadow: 0 24px 70px rgba(0,0,0,0.22); }
+body.light .auth-close { color: #9ca3af; }
+body.light .auth-close:hover { color: #111827; }
+body.light .auth-brand h2 { color: #111827; }
+body.light .auth-brand p { color: #6b7280; }
+body.light .auth-tab { background: #f9fafb; border-color: #e5e7eb; color: #6b7280; }
+body.light .auth-tab.active { background: #ecfdf5; color: #059669; border-color: #10b981; }
+body.light .auth-form input { background: #fff; color: #111827; border-color: #d1d5db; }
+body.light .signed-card { background: #f9fafb; border-color: #e5e7eb; }
+body.light .signed-card h3 { color: #111827; }
+body.light .signed-card p { color: #6b7280; }
+
+@media (max-width: 900px) {
+    .auth-content { max-width: 360px; padding: 20px; }
+    .account-nav-card { margin-bottom: 12px; }
+}
+
