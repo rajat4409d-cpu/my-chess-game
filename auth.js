@@ -6,10 +6,15 @@
 (function() {
     'use strict';
 
-    // During local development, this is your Express backend.
-    // In Phase 3, change this to your deployed backend URL, e.g.
-    // https://backrank-chess-api.onrender.com
-    var API_BASE = (localStorage.getItem('backrank-api-base') || 'https://backrank-chess-api.onrender.com').replace(/\/$/, '');
+    // Public deployed backend.
+    // If you temporarily set a custom API URL in localStorage, we use it.
+    // But on GitHub Pages, ignore old localhost overrides because visitors cannot access your computer.
+    var savedApiBase = localStorage.getItem('backrank-api-base') || '';
+    if (location.hostname.indexOf('github.io') !== -1 && /^(http:\/\/localhost|http:\/\/127\.0\.0\.1)/.test(savedApiBase)) {
+        localStorage.removeItem('backrank-api-base');
+        savedApiBase = '';
+    }
+    var API_BASE = (savedApiBase || 'https://backrank-chess-api.onrender.com').replace(/\/$/, '');
 
     var ACCOUNTS_KEY = 'backrank-phase1-accounts';
     var CURRENT_LOCAL_USER_KEY = 'backrank-phase1-current-user';
@@ -87,7 +92,7 @@
     async function detectBackend() {
         try {
             var controller = new AbortController();
-            var t = setTimeout(function() { controller.abort(); }, 1200);
+            var t = setTimeout(function() { controller.abort(); }, 30000);
             var res = await fetch(API_BASE + '/api/health', { signal: controller.signal });
             clearTimeout(t);
             if (res.ok) {
