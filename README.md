@@ -126,16 +126,25 @@ Personalize your playing experience with:
 ## 📸 Screenshots
 
 
-- ### Home Screen
-![alt text](image.png)
-- ### Playing Against AI
-![alt text](image-1.png)
-- ### Puzzle Mode
-![alt text](image-2.png)
-- ### Analysis Board
-![alt text](image-3.png)
-- ### Opening Explorer
-![alt text](image-4.png)
+### Home Screen
+
+![Home Screen](screenshots/home-screen.png)
+
+### Play Against Stockfish
+
+![Play vs AI](screenshots/play-vs-ai.png)
+
+### Puzzle Mode
+
+![Puzzle Mode](screenshots/puzzles.png)
+
+### Analysis Board
+
+![Analysis Board](screenshots/analysis.png)
+
+### Opening Explorer
+
+![Opening Explorer](screenshots/opening-move.png)
 
 ---
 
