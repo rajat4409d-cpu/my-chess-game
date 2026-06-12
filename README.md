@@ -8,7 +8,7 @@ Backrank Chess combines a clean and responsive interface with powerful chess too
 
 ## 🌐 Live Demo
 
-🔗 **Play Now:** [Add your GitHub Pages URL here]
+🔗 **Play Now:** https://rajat4409d-cpu.github.io/my-chess-game/
 
 ---
 
